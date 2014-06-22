@@ -119,11 +119,41 @@ subQuant subst (Q n v f) = case (M.filter (== v) subst) == M.empty of
     
     
 toPNF :: Formula -> Formula
-toPNF = (transformFormula simplifyFormula) .
+toPNF = (transformFormula pullQuantifiers) .
+        (transformFormula simplifyFormula) .
         pushNegation .
         (transformFormula elimVacuousQuantifiers) .
         (transformFormula replaceImp) .
         (transformFormula replaceBic)
+
+pullQuantifiers f@(B "&" (Q "V" x p) (Q "V" y q)) = pullQ True True f fa con x y p q
+pullQuantifiers f@(B "|" (Q "E" x p) (Q "E" y q)) = pullQ True True f te dis x y p q
+pullQuantifiers f@(B "|" (Q "V" x p) q) = pullQ True False f fa dis x x p q
+pullQuantifiers f@(B "|" p (Q "V" y q)) = pullQ False True f fa dis y y p q
+pullQuantifiers f@(B "|" (Q "E" x p) q) = pullQ True False f te dis x x p q
+pullQuantifiers f@(B "|" p (Q "E" y q)) = pullQ False True f te dis y y p q
+pullQuantifiers f@(B "&" (Q "V" x p) q) = pullQ True False f fa con x x p q
+pullQuantifiers f@(B "&" p (Q "V" y q)) = pullQ False True f fa con y y p q
+pullQuantifiers f@(B "&" (Q "E" x p) q) = pullQ True False f te con x x p q
+pullQuantifiers f@(B "&" p (Q "E" y q)) = pullQ False True f te con y y p q
+pullQuantifiers f = f
+
+pullQ :: Bool ->
+         Bool ->
+         Formula ->
+         (Term -> Formula -> Formula) ->
+         (Formula -> Formula -> Formula) ->
+         Term ->
+         Term ->
+         Formula ->
+         Formula ->
+         Formula
+pullQ l r f quant op x y p q =
+  let z = variant (freeVars f) x in
+  let ps = if l then subFormula (M.singleton x z) p else p in
+  let qs = if r then subFormula (M.singleton y z) q else q in
+  quant z (pullQuantifiers $ op ps qs)
+
 
 simplifyFormula (N (N f)) = f
 simplifyFormula (N T) = F

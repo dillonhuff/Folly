@@ -13,6 +13,7 @@ allFormulaTests = do
   testSubTerm
   testSubFormula
   testToPNF
+  testToPNFPullQuants
   
 testFVT =
   testFunction fvt fvtCases
@@ -127,3 +128,30 @@ pnfCases =
    (con t f, f),
    (con t t, t),
    (neg (neg (neg (pr "d" [var "o"]))), neg (pr "d" [var "o"]))]
+  
+testToPNFPullQuants =
+  testFunction toPNF pullQuantsCases
+  
+pullQuantsCases =
+  [(con (fa (var "x") (pr "d" [var "x"])) (fa (var "y") (pr "k" [var "y"])),
+    fa (var "x") (con (pr "d" [var "x"]) (pr "k" [var "x"]))),
+   (dis (te (var "k") (pr "d" [var "k"])) (te (var "j") (pr "i" [var "j"])),
+    te (var "k") (dis (pr "d" [var "k"]) (pr "i" [var "k"]))),
+   (dis (fa (var "k") (pr "d" [var "k"])) (pr "j" [var "k"]),
+    fa (var "k'") (dis (pr "d" [var "k'"]) (pr "j" [var "k"]))),
+   (dis (pr "d" [var "l"]) (fa (var "k") (pr "lj" [var "k"])),
+    fa (var "k") (dis (pr "d" [var "l"]) (pr "lj" [var "k"]))),
+   (dis (te (var "k") (pr "d" [var "k"])) (pr "j" [var "k"]),
+    te (var "k'") (dis (pr "d" [var "k'"]) (pr "j" [var "k"]))),
+   (dis (pr "d" [var "l"]) (te (var "k") (pr "lj" [var "k"])),
+    te (var "k") (dis (pr "d" [var "l"]) (pr "lj" [var "k"]))),
+   (con (fa (var "k") (pr "d" [var "k"])) (pr "j" [var "k"]),
+    fa (var "k'") (con (pr "d" [var "k'"]) (pr "j" [var "k"]))),
+   (con (pr "d" [var "l"]) (fa (var "k") (pr "lj" [var "k"])),
+    fa (var "k") (con (pr "d" [var "l"]) (pr "lj" [var "k"]))),
+   (con (te (var "k") (pr "d" [var "k"])) (pr "j" [var "k"]),
+    te (var "k'") (con (pr "d" [var "k'"]) (pr "j" [var "k"]))),
+   (con (pr "d" [var "l"]) (te (var "k") (pr "lj" [var "k"])),
+    te (var "k") (con (pr "d" [var "l"]) (pr "lj" [var "k"]))),
+   (con (con (fa (var "x") (pr "d" [var "x"])) (pr "i" [var "x"])) (pr "d" [var "k"]),
+    fa (var "x'") (con (con (pr "d" [var "x'"]) (pr "i" [var "x"])) (pr "d" [var "k"])))]
