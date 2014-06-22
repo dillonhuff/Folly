@@ -3,7 +3,7 @@ module Folly.Formula(
   var, func,
   te, fa, pr, con, dis, neg, imp, bic, t, f,
   vars, freeVars,
-  generalize) where
+  generalize, subFormula) where
 
 import Data.Set as S
 import Data.List as L
@@ -95,3 +95,22 @@ generalize f = applyList genFreeVar f
 applyList :: [a -> a] -> a -> a
 applyList [] a = a
 applyList (f:fs) a = applyList fs (f a)
+
+variant :: Set Term -> Term -> Term
+variant vars x@(Var n) = case S.member x vars of
+  True -> variant vars (Var (n ++ "'"))
+  False -> x
+  
+subFormula :: Map Term Term -> Formula -> Formula
+subFormula subst (P name args) = P name $ L.map (subTerm subst) args
+subFormula subst (B op f1 f2) = B op (subFormula subst f1) (subFormula subst f2)
+subFormula subst (N f) = N (subFormula subst f)
+subFormula subst q@(Q _ _ _) = subQuant subst q
+subFormula subst f = f
+
+subQuant :: Map Term Term -> Formula -> Formula
+subQuant subst (Q n v f) = case (M.filter (== v) subst) == M.empty of
+  True -> Q n v (subFormula subst f)
+  False -> Q n vNew $ subFormula (M.insert v vNew subst) f
+  where
+    vNew = variant (freeVars (subFormula (M.delete v subst) f)) v

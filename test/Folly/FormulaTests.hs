@@ -11,6 +11,7 @@ allFormulaTests = do
   testFreeVars
   testGeneralize
   testSubTerm
+  testSubFormula
   
 testFVT =
   testFunction fvt fvtCases
@@ -73,3 +74,23 @@ subTermCases =
     func "op" [func "op"
                [func "*" [var "c", var "d"],
                 func "+" [var "a", var "b"]]])]
+  
+testSubFormula =
+  testFunction (subFormula testFormSub) subFormulaCases
+  
+testFormSub = M.fromList
+              [(var "x", var "a"), (var "y", var "l")]
+              
+subFormulaCases =
+  [(t, t),
+   (f, f),
+   (pr "a" [var "x"], pr "a" [var "a"]),
+   (imp (pr "xo" [var "x"]) (pr "d" [var "y"]),
+    imp (pr "xo" [var "a"]) (pr "d" [var "l"])),
+   (neg (pr "isX" [var "x"]), neg (pr "isX" [var "a"])),
+   (fa (var "q") (pr "isK" [var "x"]),
+    fa (var "q") (pr "isK" [var "a"])),
+   (te (var "a") (pr "gotcha" [var "x", var "a"]),
+    te (var "a'") (pr "gotcha" [var "a", var "a'"])),
+   (fa (var "a") (te (var "a'") (pr "=" [var "x", var "a'"])),
+    fa (var "a'") (te (var "a''") (pr "=" [var "a", var "a''"])))]
