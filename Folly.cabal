@@ -17,5 +17,5 @@ cabal-version:       >=1.8
 library
   exposed-modules:     Folly.Formula
   -- other-modules:       
-  build-depends:       base ==4.5.*, Proper ==0.2.*
+  build-depends:       base ==4.5.*, containers
   hs-source-dirs:      src
