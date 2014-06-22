@@ -3,7 +3,8 @@ module Folly.Formula(
   var, func,
   te, fa, pr, con, dis, neg, imp, bic, t, f,
   vars, freeVars,
-  generalize, subFormula) where
+  generalize, subFormula,
+  toPNF) where
 
 import Data.Set as S
 import Data.List as L
@@ -49,7 +50,8 @@ instance Show Formula where
 showFormula :: Formula -> String
 showFormula T = "True"
 showFormula F = "False"
-showFormula (P predName args) = predName ++ "(" ++ (concat $ intersperse ", " $ L.map showTerm args)  ++ ")"
+showFormula (P predName args) = predName ++ "[" ++ (concat $ intersperse ", " $ L.map showTerm args)  ++ "]"
+showFormula (N (P name args)) = "~" ++ show (P name args)
 showFormula (N f) = "~(" ++ show f ++ ")"
 showFormula (B op f1 f2) = "(" ++ show f1 ++ " " ++ op ++ " "  ++ show f2 ++ ")"
 showFormula (Q q t f) = "(" ++ q ++ " "  ++ show t ++ " . " ++ show f ++ ")"
@@ -114,3 +116,45 @@ subQuant subst (Q n v f) = case (M.filter (== v) subst) == M.empty of
   False -> Q n vNew $ subFormula (M.insert v vNew subst) f
   where
     vNew = variant (freeVars (subFormula (M.delete v subst) f)) v
+    
+    
+toPNF :: Formula -> Formula
+toPNF = (transformFormula simplifyFormula) .
+        pushNegation .
+        (transformFormula elimVacuousQuantifiers) .
+        (transformFormula replaceImp) .
+        (transformFormula replaceBic)
+
+simplifyFormula (N (N f)) = f
+simplifyFormula (N T) = F
+simplifyFormula (N F) = T
+simplifyFormula (B "|" T f) = T
+simplifyFormula (B "|" f T) = T
+simplifyFormula (B "|" F F) = F
+simplifyFormula (B "&" F f) = F
+simplifyFormula (B "&" f F) = F
+simplifyFormula (B "&" T T) = T
+simplifyFormula f = f
+
+pushNegation (N (B "|" f1 f2)) = B "&" (pushNegation (N f1)) (pushNegation (N f2))
+pushNegation (N (B "&" f1 f2)) = B "|" (pushNegation (N f1)) (pushNegation (N f2))
+pushNegation (N (Q "V" x f)) = Q "E" x (pushNegation (N f))
+pushNegation (N (Q "E" x f)) = Q "V" x (pushNegation (N f))
+pushNegation f = f
+
+elimVacuousQuantifiers (Q n x f) = case S.member x (freeVars f) of
+  True -> Q n x f
+  False -> f
+elimVacuousQuantifiers f = f
+
+replaceImp (B "->" f1 f2) = dis (neg f1) f2
+replaceImp f = f
+
+replaceBic (B "<->" f1 f2) = con (imp f1 f2) (imp f2 f1)
+replaceBic f = f
+
+transformFormula :: (Formula -> Formula) -> Formula -> Formula
+transformFormula tran (B op f1 f2) = tran (B op (transformFormula tran f1) (transformFormula tran f2))
+transformFormula tran (Q q x f) = tran (Q q x (transformFormula tran f))
+transformFormula tran (N f) = tran (N (transformFormula tran f))
+transformFormula tran f = tran f

@@ -12,6 +12,7 @@ allFormulaTests = do
   testGeneralize
   testSubTerm
   testSubFormula
+  testToPNF
   
 testFVT =
   testFunction fvt fvtCases
@@ -94,3 +95,35 @@ subFormulaCases =
     te (var "a'") (pr "gotcha" [var "a", var "a'"])),
    (fa (var "a") (te (var "a'") (pr "=" [var "x", var "a'"])),
     fa (var "a'") (te (var "a''") (pr "=" [var "a", var "a''"])))]
+  
+testToPNF =
+  testFunction toPNF pnfCases
+  
+pnfCases =
+  [(t, t),
+   (f, f),
+   (imp (pr "a" [var "z"]) (pr "b" [var "z"]),
+    dis (neg (pr "a" [var "z"])) (pr "b" [var "z"])),
+   (bic (pr "d" [var "z"]) (pr "o" [var "k"]),
+    con (dis (neg (pr "d" [var "z"])) (pr "o" [var "k"]))
+        (dis (neg (pr "o" [var "k"])) (pr "d" [var "z"]))),
+   (fa (var "x") (pr "d" [var "k", var "l"]),
+    pr "d" [var "k", var "l"]),
+   (fa (var "x") (te (var "d") (pr "i" [var "x", var "y"])),
+    fa (var "x") (pr "i" [var "x", var "y"])),
+   (neg (con (pr "a" [var "d"]) (pr "k" [var "l"])),
+    dis (neg (pr "a" [var "d"])) (neg (pr "k" [var "l"]))),
+   (neg (neg (dis (pr "a" [var "z"]) (pr "d" [var "k"]))),
+    dis (pr "a" [var "z"]) (pr "d" [var "k"])),
+   (neg (con (dis (pr "d" [var "x"]) (pr "e" [var "p"])) (pr "p" [var "w"])),
+    dis (con (neg (pr "d" [var "x"])) (neg (pr "e" [var "p"]))) (neg (pr "p" [var "w"]))),
+   (neg (fa (var "x") (pr "e" [var "x"])), te (var "x") (neg (pr "e" [var "x"]))),
+   (neg (te (var "i") (pr "ds" [var "i"])), fa (var "i") (neg (pr "ds" [var "i"]))),
+   (neg (con t f), t),
+   (neg (neg (pr "d" [var "k"])), pr "d" [var "k"]),
+   (dis f t, t),
+   (dis f f, f),
+   (con f t, f),
+   (con t f, f),
+   (con t t, t),
+   (neg (neg (neg (pr "d" [var "o"]))), neg (pr "d" [var "o"]))]
