@@ -14,6 +14,7 @@ allFormulaTests = do
   testSubFormula
   testToPNF
   testToPNFPullQuants
+  testSkolemize
   
 testFVT =
   testFunction fvt fvtCases
@@ -157,3 +158,18 @@ pullQuantsCases =
     te (var "k") (con (pr "d" [var "l"]) (pr "lj" [var "k"]))),
    (con (con (fa (var "x") (pr "d" [var "x"])) (pr "i" [var "x"])) (pr "d" [var "k"]),
     fa (var "x'") (con (con (pr "d" [var "x'"]) (pr "i" [var "x"])) (pr "d" [var "k"])))]
+  
+testSkolemize =
+  testFunction toSkolemForm skolemizeCases
+  
+skolemizeCases =
+  [(pr "d" [var "a"], pr "d" [var "a"]),
+   (te (var "x") (pr "d" [var "x"]), pr "d" [skf 0 []]),
+   (te (var "x") (fa (var "y") (pr "d" [var "x", var "y"])),
+    fa (var "y") (pr "d" [skf 0 [], var "y"])),
+   (fa (var "k") (te (var "l") (te (var "m") (pr "i" [var "l", var "m", var "k"]))),
+    fa (var "k") (pr "i" [skf 0 [var "k"], skf 1 [var "k"], var "k"])),
+   (fa (var "a") (te (var "b") (fa (var "c") (pr "l" [var "b", var "c", var "a"]))),
+    fa (var "a") (fa (var "c") (pr "l" [skf 0 [var "a"], var "c", var "a"]))),
+   (fa (var "a") (fa (var "b") (te (var "c") (pr "l" [var "a", var "c", var "b"]))),
+    fa (var "a") (fa (var "b") (pr "l" [var "a", skf 0 [var "b", var "a"], var "b"])))]

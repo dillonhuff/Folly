@@ -4,7 +4,7 @@ module Folly.Formula(
   te, fa, pr, con, dis, neg, imp, bic, t, f,
   vars, freeVars,
   generalize, subFormula,
-  toPNF) where
+  toPNF, toSkolemForm, skf) where
 
 import Data.Set as S
 import Data.List as L
@@ -18,14 +18,16 @@ data Term =
            
 instance Show Term where
   show = showTerm
-  
+   
 showTerm :: Term -> String
 showTerm (Constant name) = name
 showTerm (Var name) = name
 showTerm (Func name args) = name ++ "(" ++ (concat $ intersperse ", " $ L.map showTerm args) ++ ")"
 
 var n = Var n
-func n args = Func n args
+func n args = case (L.take 3 n) == "skl" of
+  True -> error $ "Function names beginning with skl are reserved for skolemization"
+  False -> Func n args
 constant n = Constant n
 
 fvt :: Term -> Set Term
@@ -98,7 +100,7 @@ generalize :: Formula -> Formula
 generalize f = applyList genFreeVar f
   where
     genFreeVar = L.map fa (S.toList (freeVars f))
-    
+
 applyList :: [a -> a] -> a -> a
 applyList [] a = a
 applyList (f:fs) a = applyList fs (f a)
@@ -193,3 +195,27 @@ transformFormula tran (B op f1 f2) = tran (B op (transformFormula tran f1) (tran
 transformFormula tran (Q q x f) = tran (Q q x (transformFormula tran f))
 transformFormula tran (N f) = tran (N (transformFormula tran f))
 transformFormula tran f = tran f
+
+-- Conversion to Skolem form
+toSkolemForm :: Formula -> Formula
+toSkolemForm = skolemize . toPNF
+
+skolemize :: Formula -> Formula
+skolemize f = (transformFormula removeExistential) $ replaceVarsWithSkolemFuncs f
+
+removeExistential :: Formula -> Formula
+removeExistential (Q "E" v f) = f
+removeExistential f = f
+
+replaceVarsWithSkolemFuncs :: Formula -> Formula
+replaceVarsWithSkolemFuncs f = subFormula varsToSkolemFuncs f
+  where
+    varsToSkolemFuncs = collectSkolemFuncs f 0 []
+    
+collectSkolemFuncs :: Formula -> Int -> [Term] -> Map Term Term
+collectSkolemFuncs (Q "E" v f) n vars = M.insert v (skf n vars) (collectSkolemFuncs f (n+1) vars)
+collectSkolemFuncs (Q "V" v f) n vars = collectSkolemFuncs f n (v:vars)
+collectSkolemFuncs _ _ _ = M.empty
+
+skf :: Int -> [Term] -> Term
+skf n vars = Func ("skl" ++ show n) vars
