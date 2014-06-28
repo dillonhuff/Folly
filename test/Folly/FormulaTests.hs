@@ -22,7 +22,8 @@ fvtCases =
   [(var "a", S.fromList [var "a"]),
    (func "+" [(var "x"), (var "y")], S.fromList [(var "x"), (var "y")]),
    (func "*" [(var "x"), (func "-" [(var "y"), (var "z")])],
-    S.fromList [var "x", var "y", var "z"])]
+    S.fromList [var "x", var "y", var "z"]),
+   (constant "1", S.empty)]
   
 testVars =
   testFunction vars varsCases
@@ -69,7 +70,8 @@ testSub = M.fromList
            (var "k", func "*" [var "c", var "d"])]
           
 subTermCases =
-  [(var "x", func "+" [var "a", var "b"]),
+  [(constant "o", constant "o"),
+   (var "x", func "+" [var "a", var "b"]),
    (func "su" [var "x", var "l"],
     func "su" [func "+" [var "a", var "b"], var "l"]),
    (func "op" [func "op" [var "k", var "x"]],
@@ -90,8 +92,8 @@ subFormulaCases =
    (imp (pr "xo" [var "x"]) (pr "d" [var "y"]),
     imp (pr "xo" [var "a"]) (pr "d" [var "l"])),
    (neg (pr "isX" [var "x"]), neg (pr "isX" [var "a"])),
-   (fa (var "q") (pr "isK" [var "x"]),
-    fa (var "q") (pr "isK" [var "a"])),
+   (fa (var "q") (pr "isK" [var "x", constant "p"]),
+    fa (var "q") (pr "isK" [var "a", constant "p"])),
    (te (var "a") (pr "gotcha" [var "x", var "a"]),
     te (var "a'") (pr "gotcha" [var "a", var "a'"])),
    (fa (var "a") (te (var "a'") (pr "=" [var "x", var "a'"])),

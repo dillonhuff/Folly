@@ -1,6 +1,6 @@
 module Folly.Formula(
   fvt, subTerm,
-  var, func,
+  var, func, constant,
   te, fa, pr, con, dis, neg, imp, bic, t, f,
   vars, freeVars,
   generalize, subFormula,
@@ -11,7 +11,8 @@ import Data.List as L
 import Data.Map as M
 
 data Term =
-  Var String |
+  Constant String    |
+  Var String         |
   Func String [Term]
   deriving (Eq, Ord)
            
@@ -19,17 +20,21 @@ instance Show Term where
   show = showTerm
   
 showTerm :: Term -> String
+showTerm (Constant name) = name
 showTerm (Var name) = name
 showTerm (Func name args) = name ++ "(" ++ (concat $ intersperse ", " $ L.map showTerm args) ++ ")"
 
 var n = Var n
 func n args = Func n args
+constant n = Constant n
 
 fvt :: Term -> Set Term
+fvt (Constant _) = S.empty
 fvt (Var n) = S.fromList [(Var n)]
 fvt (Func name args) = S.foldl S.union S.empty (S.fromList (L.map fvt args))
 
 subTerm :: Map Term Term -> Term -> Term
+subTerm _ (Constant name) = Constant name
 subTerm sub (Func name args) = (Func name (L.map (subTerm sub) args))
 subTerm sub (Var x) = case M.lookup (Var x) sub of
   Just s -> s
