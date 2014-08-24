@@ -1,4 +1,5 @@
 module Folly.Lexer(
+  Token, name, isVar, isPred, pos,
   testOp, testVar, testQuant,
   testPred, testSep,
   lexer) where
@@ -24,6 +25,9 @@ instance Eq Token where
 isVar (Var _ _) = True
 isVar _ = False
 
+isPred (Pred _ _) = True
+isPred _ = False
+
 name (Var n _) = n
 name (Pred n _) = n
 name (Sep n _) = n
@@ -32,6 +36,7 @@ name (Res n _) = n
 name (Quant n _) = n
 
 pos (Var _ p) = p
+pos (Pred _ p) = p
 pos (Sep _ p) = p
 pos (Op _ p) = p
 pos (Res _ p) = p
@@ -82,7 +87,7 @@ nonEQPred firstChar pos = do
 atomicLit = do
   pos <- getPosition
   firstChar <- lower
-  rest <- many alphaNum
+  rest <- many bodyChar
   return $ Var (firstChar:rest) pos
   
 reservedWord = do
@@ -92,7 +97,7 @@ reservedWord = do
 
 separator = do
   pos <- getPosition
-  name <- choice $ map string ["(", ")", "]", "["]
+  name <- choice $ map string ["(", ")", "]", "[", ","]
   return $ Sep name pos
 
 operator = do
