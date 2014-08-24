@@ -31,13 +31,18 @@ martelliMontanari [] = Just []
 martelliMontanari ((t1, t2):rest) = case t1 == t2 of
   True -> martelliMontanari rest
   False -> case isVar t1 of
-    True -> liftM ((:) (t1, t2)) $ martelliMontanari $ applyToAll (t1, t2) rest
+    True -> eliminateVar t1 t2 rest 
     False -> case isVar t2 of
       True -> martelliMontanari ((t2, t1):rest)
       False -> case isFunc t1 && isFunc t2 && funcName t1 == funcName t2 of
         True -> martelliMontanari $ (zip (funcArgs t1) (funcArgs t2)) ++ rest
         False -> Nothing
-    
+
+eliminateVar :: Term -> Term -> [(Term, Term)] -> Maybe [(Term, Term)]
+eliminateVar var term rest = case S.member var (fvt term) of
+  True -> Nothing
+  False -> liftM ((:) (var, term)) $ martelliMontanari $ applyToAll (var, term) rest
+
 applyToAll :: (Term, Term) -> [(Term, Term)] -> [(Term, Term)]
 applyToAll sub toUnify = L.map applyToPair toUnify
   where
