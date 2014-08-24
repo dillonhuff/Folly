@@ -40,6 +40,7 @@ pos (Pred _ p) = p
 pos (Sep _ p) = p
 pos (Op _ p) = p
 pos (Res _ p) = p
+pos (Quant _ p) = p
 
 testVar s = Var s (newPos "DUMMY" 0 0)
 testPred s = Pred s (newPos "DUMMY" 0 0)
@@ -97,7 +98,7 @@ reservedWord = do
 
 separator = do
   pos <- getPosition
-  name <- choice $ map string ["(", ")", "]", "[", ","]
+  name <- choice $ map string ["(", ")", "]", "[", ",", "."]
   return $ Sep name pos
 
 operator = do

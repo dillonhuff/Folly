@@ -15,4 +15,7 @@ parseFormulaCases =
    ("Dog[x] & Owns[John, x]", Succeeded $ con (pr "Dog" [var "x"]) (pr "Owns" [constant "John", var "x"])),
    ("Ex[p] | ~Ex[x]", Succeeded $ dis (pr "Ex" [var "p"]) (neg (pr "Ex" [var "x"]))),
    ("Ex[p] -> ~Ex[x]", Succeeded $ imp (pr "Ex" [var "p"]) (neg (pr "Ex" [var "x"]))),
-   ("Ex[p] <-> ~Ex[x]", Succeeded $ bic (pr "Ex" [var "p"]) (neg (pr "Ex" [var "x"])))]
+   ("Ex[p] <-> ~Vx[x]", Succeeded $ bic (pr "Ex" [var "p"]) (neg (pr "Vx" [var "x"]))),
+   ("V x . U#12[x]", Succeeded $ fa (var "x") (pr "U#12" [var "x"])),
+   ("E y . K[f(l, y, No)]", Succeeded $ te (var "y") (pr "K" [func "f" [var "l", var "y", constant "No"]])),
+   ("V z . E k. F[z] -> G[k]", Succeeded $ fa (var "z") (te (var "k") (imp (pr "F" [var "z"]) (pr "G" [var "k"]))))]

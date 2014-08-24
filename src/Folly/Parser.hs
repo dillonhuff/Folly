@@ -42,19 +42,31 @@ table =
    [conjunction],
    [disjunction],
    [implication],
-   [bicondition]]
+   [bicondition],
+   [quantification]]
 
 negation = Prefix parseNeg
 conjunction = Infix parseCon AssocRight
 disjunction = Infix parseDis AssocRight
 implication = Infix parseImp AssocRight
 bicondition = Infix parseBic AssocRight
+quantification = Prefix parseQuant
 
 parseParens e = do
   propTok "("
   expr <- e
   propTok ")"
   return expr
+
+parseQuant :: (Monad m) => ParsecT [Token] u m (Formula -> Formula)
+parseQuant = do
+  quantType <- propTok "V" <|> propTok "E"
+  varName <- varTok
+  propTok "."
+  case (name quantType) of
+    "V" -> return $ fa (var (name varName))
+    "E" -> return $ te (var (name varName))
+    _ -> error $ show quantType ++ " is not a quantifier"
 
 parseNeg :: (Monad m) => ParsecT [Token] u m (Formula -> Formula)
 parseNeg = do
