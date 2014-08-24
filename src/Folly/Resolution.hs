@@ -57,4 +57,10 @@ unifiedResolvedClause lLit lc rLit rc = case mostGeneralUnifier $ zip (literalAr
   Nothing -> Nothing
 
 uniqueVarNames :: [Clause] -> [Clause]
-uniqueVarNames cls = cls
+uniqueVarNames cls = zipWith attachSuffix cls (L.map show [1..length cls])
+
+attachSuffix :: Clause -> String -> Clause
+attachSuffix cls suffix = L.map (addSuffixToVarNames suffix) cls
+
+addSuffixToVarNames :: String -> Formula -> Formula
+addSuffixToVarNames suffix form = applyToTerms form (appendVarName suffix)

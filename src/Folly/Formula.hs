@@ -2,6 +2,7 @@ module Folly.Formula(
   Term, Formula,
   fvt, subTerm, isVar, isConst, isFunc,
   funcName, funcArgs,
+  appendVarName,
   var, func, constant,
   te, fa, pr, con, dis, neg, imp, bic, t, f,
   vars, freeVars,
@@ -51,11 +52,15 @@ func n args = case (L.take 3 n) == "skl" of
   False -> Func n args
 constant n = Constant n
 
+appendVarName :: String -> Term -> Term
+appendVarName suffix (Var n) = Var (n ++ suffix)
+appendVarName suffix (Func name args) = Func name $ L.map (appendVarName suffix) args
+appendVarName _ t = t
+
 fvt :: Term -> Set Term
 fvt (Constant _) = S.empty
 fvt (Var n) = S.fromList [(Var n)]
 fvt (Func name args) = S.foldl S.union S.empty (S.fromList (L.map fvt args))
-
 
 subTerm :: Map Term Term -> Term -> Term
 subTerm _ (Constant name) = Constant name
