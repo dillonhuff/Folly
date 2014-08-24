@@ -1,4 +1,4 @@
-module Folly.LexerTests() where
+module Folly.LexerTests(allLexerTests) where
 
 import Folly.Lexer
 import Folly.TestUtils

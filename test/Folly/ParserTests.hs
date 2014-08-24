@@ -1,4 +1,4 @@
-module Folly.ParserTests() where
+module Folly.ParserTests(allParserTests) where
 
 import Folly.Formula
 import Folly.Lexer

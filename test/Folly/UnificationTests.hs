@@ -1,4 +1,4 @@
-module Folly.UnificationTests() where
+module Folly.UnificationTests(allUnificationTests) where
 
 import Folly.Formula
 import Folly.TestUtils

@@ -1,4 +1,4 @@
-module Folly.ResolutionTests() where
+module Folly.ResolutionTests(allResolutionTests) where
 
 import Folly.Formula
 import Folly.Resolution
