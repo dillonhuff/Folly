@@ -37,22 +37,23 @@ parseFormula toks = case parse parseForm "PARSER" toks of
 
 parseForm = buildExpressionParser table parseFactor
 
-parseFactor = parseParens parseForm <|> parsePredicate
+parseFactor = try (parseParens parseForm)
+             <|> try parsePredicate
+             <|> parseQuantification
 
 table =
   [[negation],
    [conjunction],
    [disjunction],
    [implication],
-   [bicondition],
-   [quantification]]
+   [bicondition]]
 
 negation = Prefix parseNeg
 conjunction = Infix parseCon AssocRight
 disjunction = Infix parseDis AssocRight
 implication = Infix parseImp AssocRight
 bicondition = Infix parseBic AssocRight
-quantification = Prefix parseQuant
+--quantification = Prefix parseQuant
 
 parseParens e = do
   propTok "("
@@ -60,14 +61,14 @@ parseParens e = do
   propTok ")"
   return expr
 
-parseQuant :: (Monad m) => ParsecT [Token] u m (Formula -> Formula)
-parseQuant = do
+parseQuantification = do
   quantType <- propTok "V" <|> propTok "E"
   varName <- varTok
   propTok "."
+  form <- parseForm
   case (name quantType) of
-    "V" -> return $ fa (var (name varName))
-    "E" -> return $ te (var (name varName))
+    "V" -> return $ fa (var (name varName)) form
+    "E" -> return $ te (var (name varName)) form
     _ -> error $ show quantType ++ " is not a quantifier"
 
 parseNeg :: (Monad m) => ParsecT [Token] u m (Formula -> Formula)
