@@ -6,7 +6,9 @@ module Folly.Formula(
   te, fa, pr, con, dis, neg, imp, bic, t, f,
   vars, freeVars,
   generalize, subFormula,
-  toPNF, toSkolemForm, skf) where
+  toPNF, toSkolemForm, skf,
+  Clause,
+  toClausalForm,) where
 
 import Control.Monad
 import Data.Set as S
@@ -235,3 +237,21 @@ collectSkolemFuncs _ _ _ = M.empty
 
 skf :: Int -> [Term] -> Term
 skf n vars = Func ("skl" ++ show n) vars
+
+-- Conversion to clausal form
+type Clause = [Formula]
+
+toClausalForm :: Formula -> [Clause]
+toClausalForm = splitClauses . removeUniversals . toSkolemForm
+
+removeUniversals :: Formula -> Formula
+removeUniversals (Q "V" v f) = removeUniversals f
+removeUniversals f = f
+
+splitClauses :: Formula -> [Clause]
+splitClauses (B "&" l r) = (splitClauses l) ++ (splitClauses r)
+splitClauses f = [splitDis f]
+
+splitDis :: Formula -> Clause
+splitDis (B "|" l r) = (splitDis l) ++ (splitDis r)
+splitDis f = [f]
