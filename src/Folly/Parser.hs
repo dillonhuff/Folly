@@ -35,7 +35,9 @@ parseFormula toks = case parse parseForm "PARSER" toks of
   Left err -> Failed $ show err
   Right formula -> Succeeded formula
 
-parseForm = buildExpressionParser table parseLiteral
+parseForm = buildExpressionParser table parseFactor
+
+parseFactor = parseParens parseForm <|> parsePredicate
 
 table =
   [[negation],
@@ -88,11 +90,9 @@ parseImp = do
 parseBic = do
   propTok "<->"
   return $ bic
-  
-parseLiteral = parseParens parseLit <|> parseLit
 
-parseLit :: (Monad m) => ParsecT [Token] u m Formula
-parseLit = do
+parsePredicate :: (Monad m) => ParsecT [Token] u m Formula
+parsePredicate = do
   nameTok <- predicateTok
   propTok "["
   terms <- sepBy parseTerm (propTok ",")
