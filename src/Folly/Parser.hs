@@ -1,5 +1,6 @@
 module Folly.Parser(
-  parseFormula) where
+  parseFormula,
+  parseTheorem) where
 
 import Text.Parsec.Combinator
 import Text.Parsec.Expr
@@ -11,23 +12,24 @@ import Folly.Lexer as Lex
 import Folly.Theorem
 import Folly.Utils
 
-parseTheoremToks toks = case parse parseTheorem "PARSER" toks of
+parseTheorem :: [Token] -> Error Theorem
+parseTheorem toks = case parse parseTheoremToks "PARSER" toks of
   Left err -> Failed $ show err
   Right thm -> Succeeded thm
 
-parseTheorem = do
-  axioms <- parseAxioms
-  hypothesis <- parseHypothesis
+parseTheoremToks = do
+  axioms <- parseHypothesis
+  hypothesis <- parseConclusion
   return $ theorem axioms hypothesis
   
-parseAxioms = do
-  propTok "AXIOMS:"
-  axioms <- many parseForm
+parseConclusion = do
+  propTok "CONCLUSION:"
+  axioms <- parseForm
   return axioms
   
 parseHypothesis = do
   propTok "HYPOTHESIS:"
-  hypothesis <- parseForm
+  hypothesis <- many parseForm
   return hypothesis
 
 parseFormula :: [Token] -> Error Formula

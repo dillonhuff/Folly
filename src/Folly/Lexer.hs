@@ -93,7 +93,7 @@ atomicLit = do
   
 reservedWord = do
   pos <- getPosition
-  name <- try (string "AXIOMS:") <|> (string "HYPOTHESIS:")
+  name <- try (string "HYPOTHESIS:") <|> (string "CONCLUSION:")
   return $ Res name pos
 
 separator = do

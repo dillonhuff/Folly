@@ -1,0 +1,11 @@
+HYPOTHESIS:
+V x. (E y. Owns[x, y] & Dog[y]) -> LovesAnimals[x]
+V x. LovesAnimals[x] -> (V y. Animal[y] -> ~Killed[x, y])
+Dog[Fido]
+Owns[John, Fido]
+E p. Killed[p, Cat]
+Animal[Cat]
+Killed[Curiosity, Cat] | Killed[John, Cat]
+
+CONCLUSION:
+Killed[Curiosity, Cat]
