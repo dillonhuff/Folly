@@ -1,4 +1,5 @@
 module Folly.Formula(
+  Term, Formula,
   fvt, subTerm,
   var, func, constant,
   te, fa, pr, con, dis, neg, imp, bic, t, f,
