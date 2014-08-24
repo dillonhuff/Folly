@@ -130,7 +130,8 @@ pnfCases =
    (con f t, f),
    (con t f, f),
    (con t t, t),
-   (neg (neg (neg (pr "d" [var "o"]))), neg (pr "d" [var "o"]))]
+   (neg (neg (neg (pr "d" [var "o"]))), neg (pr "d" [var "o"])),
+   (dis (neg (con (pr "Dog" [var "x"]) (pr "Owns" [var "y", var "x"]))) (pr "LovesAnimals" [var "y"]), (dis (dis (neg (pr "Dog" [var "x"])) (neg (pr "Owns" [var "y", var "x"]))) (pr "LovesAnimals" [var "y"])))]
   
 testToPNFPullQuants =
   testFunction toPNF pullQuantsCases

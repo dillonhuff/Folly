@@ -128,7 +128,7 @@ subQuant subst (Q n v f) = case (M.filter (== v) subst) == M.empty of
 toPNF :: Formula -> Formula
 toPNF = (transformFormula pullQuantifiers) .
         (transformFormula simplifyFormula) .
-        pushNegation .
+        (transformFormula pushNegation) .
         (transformFormula elimVacuousQuantifiers) .
         (transformFormula replaceImp) .
         (transformFormula replaceBic)
@@ -160,7 +160,6 @@ pullQ l r f quant op x y p q =
   let ps = if l then subFormula (M.singleton x z) p else p in
   let qs = if r then subFormula (M.singleton y z) q else q in
   quant z (pullQuantifiers $ op ps qs)
-
 
 simplifyFormula (N (N f)) = f
 simplifyFormula (N T) = F
