@@ -1,12 +1,14 @@
 module Folly.Formula(
   Term, Formula,
-  fvt, subTerm,
+  fvt, subTerm, isVar, isConst, isFunc,
+  funcName, funcArgs,
   var, func, constant,
   te, fa, pr, con, dis, neg, imp, bic, t, f,
   vars, freeVars,
   generalize, subFormula,
   toPNF, toSkolemForm, skf) where
 
+import Control.Monad
 import Data.Set as S
 import Data.List as L
 import Data.Map as M
@@ -25,6 +27,19 @@ showTerm (Constant name) = name
 showTerm (Var name) = name
 showTerm (Func name args) = name ++ "(" ++ (concat $ intersperse ", " $ L.map showTerm args) ++ ")"
 
+isVar (Var _) = True
+isVar _ = False
+
+isFunc (Func _ _) = True
+isFunc _ = False
+
+isConst (Constant _) = True
+isConst _ = False
+
+funcName (Func n _) = n
+
+funcArgs (Func _ a) = a
+
 var n = Var n
 func n args = case (L.take 3 n) == "skl" of
   True -> error $ "Function names beginning with skl are reserved for skolemization"
@@ -35,6 +50,7 @@ fvt :: Term -> Set Term
 fvt (Constant _) = S.empty
 fvt (Var n) = S.fromList [(Var n)]
 fvt (Func name args) = S.foldl S.union S.empty (S.fromList (L.map fvt args))
+
 
 subTerm :: Map Term Term -> Term -> Term
 subTerm _ (Constant name) = Constant name
