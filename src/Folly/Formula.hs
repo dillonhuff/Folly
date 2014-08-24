@@ -6,9 +6,12 @@ module Folly.Formula(
   te, fa, pr, con, dis, neg, imp, bic, t, f,
   vars, freeVars,
   generalize, subFormula,
+  applyToTerms,
+  literalArgs,
   toPNF, toSkolemForm, skf,
   Clause,
-  toClausalForm,) where
+  toClausalForm,
+  matchingLiterals) where
 
 import Control.Monad
 import Data.Set as S
@@ -82,6 +85,12 @@ showFormula (N f) = "~(" ++ show f ++ ")"
 showFormula (B op f1 f2) = "(" ++ show f1 ++ " " ++ op ++ " "  ++ show f2 ++ ")"
 showFormula (Q q t f) = "(" ++ q ++ " "  ++ show t ++ " . " ++ show f ++ ")"
 
+applyToTerms :: Formula -> (Term -> Term) -> Formula
+applyToTerms (P n args) f = P n $ L.map f args
+applyToTerms (B n l r) f = B n (applyToTerms l f) (applyToTerms r f)
+applyToTerms (Q n v l) f = Q n (f v) (applyToTerms l f)
+applyToTerms (N l) f = N (applyToTerms l f)
+
 te :: Term -> Formula -> Formula
 te v@(Var _) f = Q "E" v f
 te t _ = error $ "Cannot quantify over non-variable term " ++ show t
@@ -114,6 +123,18 @@ freeVars (P name terms) = S.fold S.union S.empty $ S.fromList (L.map fvt terms)
 freeVars (B _ f1 f2) = S.union (freeVars f1) (freeVars f2)
 freeVars (N f) = freeVars f
 freeVars (Q _ v f) = S.delete v (freeVars f)
+
+literalArgs :: Formula -> [Term]
+literalArgs (P _ a) = a
+literalArgs (N (P _ a)) = a
+literalArgs l = error $ show l ++ " is not a literal"
+
+matchingLiterals :: Formula -> Formula -> Bool
+matchingLiterals (P n1 _) (N (P n2 _)) = n1 == n2
+matchingLiterals (N (P n1 _)) (P n2 _) = n1 == n2
+matchingLiterals (P _ _) (P _ _) = False
+matchingLiterals (N (P _ _)) (N (P _ _)) = False
+matchingLiterals l1 l2 = error $ show l1 ++ " or " ++ show l2 ++ " is not a literal"
 
 generalize :: Formula -> Formula
 generalize f = applyList genFreeVar f
