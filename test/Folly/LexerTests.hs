@@ -22,6 +22,7 @@ lexerCases =
    ("<->", Succeeded $ [testOp "<->"]),
    ("E", Succeeded $ [testQuant "E"]),
    ("Q", Succeeded $ [testQuant "Q"]),
+   ("=", Succeeded $ [testPred "="]),
    ("Ever", Succeeded $ [testPred "Ever"]),
    ("Quacks", Succeeded $ [testPred "Quacks"]),
    ("N#%_Man", Succeeded $ [testPred "N#%_Man"]),

@@ -71,7 +71,7 @@ parseTok = try atomicLit
 
 predicate = do
   pos <- getPosition
-  firstChar <- upper
+  firstChar <- upper <|> specialChar
   case firstChar of
     'E' -> eOrQPred 'E' pos
     'Q' -> eOrQPred 'Q' pos
@@ -111,4 +111,6 @@ quantifier = do
   name <- choice $ map string ["E", "Q"]
   return $ Quant name pos
 
-bodyChar = alphaNum <|> (oneOf "!@#$%*<>?+=-_")
+bodyChar = alphaNum <|> specialChar
+
+specialChar = oneOf "!@#$%*<>?+=-_"

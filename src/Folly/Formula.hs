@@ -268,7 +268,15 @@ skf n vars = Func ("skl" ++ show n) vars
 type Clause = [Formula]
 
 toClausalForm :: Formula -> [Clause]
-toClausalForm = splitClauses . removeUniversals . toSkolemForm
+toClausalForm = splitClauses . removeUniversals . distributeDisjunction . toSkolemForm
+
+distributeDisjunction :: Formula -> Formula
+distributeDisjunction f = transformFormula distrDis f
+
+distrDis :: Formula -> Formula
+distrDis (B "|" (B "&" l r) f) = (B "&" (B "|" l f) (B "|" r f))
+distrDis (B "|" f (B "&" l r)) = (B "&" (B "|" f l) (B "|" f r))
+distrDis f = f
 
 removeUniversals :: Formula -> Formula
 removeUniversals (Q "V" v f) = removeUniversals f

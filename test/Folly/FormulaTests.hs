@@ -15,6 +15,7 @@ allFormulaTests = do
   testToPNF
   testToPNFPullQuants
   testSkolemize
+  testToClausalForm
   
 testFVT =
   testFunction fvt fvtCases
@@ -174,3 +175,16 @@ skolemizeCases =
     fa (var "a") (fa (var "c") (pr "l" [skf 0 [var "a"], var "c", var "a"]))),
    (fa (var "a") (fa (var "b") (te (var "c") (pr "l" [var "a", var "c", var "b"]))),
     fa (var "a") (fa (var "b") (pr "l" [var "a", skf 0 [var "b", var "a"], var "b"])))]
+
+testToClausalForm =
+  testFunction toClausalForm clausalFormCases
+
+clausalFormCases =
+  [(pr "d" [var "no"], [[pr "d" [var "no"]]]),
+   (fa (var "x") (con (pr "a" [var "x"]) (pr "d" [constant "P"])),
+    [[pr "a" [var "x"]], [pr "d" [constant "P"]]]),
+   (dis (pr "a" [var "x"]) (pr "d" [var "c"]), [[pr "a" [var "x"], pr "d" [var "c"]]]),
+   (bic (pr "P" [var "x"]) (con (pr "Q" [var "y"]) (pr "R" [var "z"])),
+    [[neg (pr "P" [var "x"]), pr "Q" [var "y"]],
+     [neg (pr "P" [var "x"]), pr "R" [var "z"]],
+     [neg (pr "Q" [var "y"]), neg (pr "R" [var "z"]), pr "P" [var "x"]]])]

@@ -36,4 +36,5 @@ equalityAxioms =
 groupWithEquals =
   [(fa (var "x") (te (var "y") (con (pr "=" [func "*" [var "x", var "y"], constant "1"]) (pr "=" [func "*" [var "y", var "x"], constant "1"])))),
    (fa (var "x") (fa (var "y") (fa (var "z") (pr "=" [func "*" [var "x", func "*" [var "y", var "z"]], func "*" [func "*" [var "x", var "y"], var "z"]])))),
-   (fa (var "x") (con (pr "=" [func "*" [var "x", constant "1"], var "x"]) (pr "=" [func "*" [constant "1", var "x"], constant "x"])))] ++ equalityAxioms
+   (fa (var "x") (con (pr "=" [func "*" [var "x", constant "1"], var "x"]) (pr "=" [func "*" [constant "1", var "x"], constant "x"]))),
+   (bic (pr "Inverse" [var "x", var "y"]) (] ++ equalityAxioms
