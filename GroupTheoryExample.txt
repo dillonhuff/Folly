@@ -4,7 +4,7 @@ V x. Eq[x, x]
 V x. V y. Eq[x, y] -> Eq[y, x]
 V x. V y. V z. (Eq[x, y] & Eq[y, z]) -> Eq[x, z]
 
-V x. V y. V z. Eq[times(x, times(y, z)), times(time(x, y), z)]
+V x. V y. V z. Eq[times(x, times(y, z)), times(times(x, y), z)]
 V x. Eq[times(x, One), x] & Eq[times(One, x), x]
 V x. E y. Eq[times(x, y), One]
 
