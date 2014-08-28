@@ -12,6 +12,7 @@ module Folly.Formula(
   toPNF, toSkolemForm, skf,
   Clause,
   toClausalForm,
+  isTautology,
   matchingLiterals) where
 
 import Control.Monad
@@ -128,6 +129,14 @@ freeVars (P name terms) = S.fold S.union S.empty $ S.fromList (L.map fvt terms)
 freeVars (B _ f1 f2) = S.union (freeVars f1) (freeVars f2)
 freeVars (N f) = freeVars f
 freeVars (Q _ v f) = S.delete v (freeVars f)
+
+isAtom :: Formula -> Bool
+isAtom (P _ _) = True
+isAtom _ = False
+
+stripNegations :: Formula -> Formula
+stripNegations (N t) = t
+stripNegations f = f
 
 literalArgs :: Formula -> [Term]
 literalArgs (P _ a) = a
@@ -289,3 +298,9 @@ splitClauses f = [splitDis f]
 splitDis :: Formula -> Clause
 splitDis (B "|" l r) = (splitDis l) ++ (splitDis r)
 splitDis f = [f]
+
+isTautology :: Clause -> Bool
+isTautology c = L.length (L.intersect atoms negAtoms) > 0
+  where
+    atoms = L.filter isAtom c
+    negAtoms = L.map stripNegations $ L.filter (not . isAtom) c

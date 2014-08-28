@@ -10,7 +10,7 @@ import Folly.Theorem
 import Folly.Unification
 
 isValid :: Theorem -> Bool
-isValid t = not $ resolve clauseSet
+isValid t = not $ resolve $ deleteTautologies $ clauseSet
   where
     formulas = (neg (conclusion t)) : (hypothesis t)
     clauses = uniqueVarNames $ L.concat $ L.map toClausalForm formulas
@@ -18,7 +18,7 @@ isValid t = not $ resolve clauseSet
 
 resolve :: Set Clause -> Bool
 resolve cls = case S.member [] cls of
-  True -> False
+  True -> True
   False -> resolveIter [cls]
 
 resolveIter :: [Set Clause] -> Bool
@@ -34,7 +34,7 @@ resolveIter clauseSets = case S.size newClauses == 0 of
       _ -> generateNewClauses (head clauseSets) (L.foldl S.union S.empty (tail clauseSets))
 
 generateNewClauses :: Set Clause -> Set Clause -> Set Clause
-generateNewClauses recent old = newClauses
+generateNewClauses recent old = deleteTautologies $ newClauses
   where
     newClauses = S.fold S.union S.empty $ S.map (\ c -> genNewClauses c old) recent
     genNewClauses c cs = S.fold S.union S.empty $ S.map (\ x -> resolvedClauses c x) cs
@@ -64,3 +64,6 @@ attachSuffix cls suffix = L.map (addSuffixToVarNames suffix) cls
 
 addSuffixToVarNames :: String -> Formula -> Formula
 addSuffixToVarNames suffix form = applyToTerms form (appendVarName suffix)
+
+deleteTautologies :: Set Clause -> Set Clause
+deleteTautologies clauses = S.filter (not . isTautology) clauses
