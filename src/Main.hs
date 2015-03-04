@@ -20,6 +20,8 @@ main = do
     Failed errMsg -> putStrLn errMsg
     Succeeded t -> do
       putStr $ show t
-      putStrLn $ "\n\nis " ++ (show $ isValid t)
+      case isValid t of
+        True -> putStrLn "\n\nIs Valid"
+        False -> putStrLn "\n\nIs not valid"
 
 processTheoremFile thmFileContents = (lexer thmFileContents) >>= parseTheorem
