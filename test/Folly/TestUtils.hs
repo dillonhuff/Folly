@@ -2,6 +2,7 @@ module Folly.TestUtils(testFunction) where
 
 import Test.HUnit
 
+
 testFunction func cases = runTestTT $ makeTestCases func cases
 
 makeTestCases func cases =

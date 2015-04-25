@@ -10,7 +10,6 @@ module Folly.Formula(
   applyToTerms,
   literalArgs,
   toPNF, toSkolemForm, skf,
-  Clause,
   toClausalForm,
   isTautology,
   matchingLiterals) where
@@ -70,38 +69,38 @@ subTerm sub (Var x) = case M.lookup (Var x) sub of
   Just s -> s
   Nothing -> (Var x)
 
-data Formula =
+data Formula a =
   T                            | 
   F                            |
   P String [Term]              |
-  B String Formula Formula     |
-  N Formula                    |
-  Q String Term Formula
+  B String (Formula a) (Formula a)     |
+  N (Formula a)                    |
+  Q String Term (Formula a)
   deriving (Eq, Ord)
            
-instance Show Formula where
+instance Show a => (Show (Formula a)) where
   show = showFormula
   
-showFormula :: Formula -> String
+showFormula :: (Show a) => Formula a -> String
 showFormula T = "True"
 showFormula F = "False"
 showFormula (P predName args) = predName ++ "[" ++ (concat $ intersperse ", " $ L.map showTerm args)  ++ "]"
-showFormula (N (P name args)) = "~" ++ show (P name args)
+--showFormula (N (P name args)) = "~" ++ show (P name args)
 showFormula (N f) = "~(" ++ show f ++ ")"
 showFormula (B op f1 f2) = "(" ++ show f1 ++ " " ++ op ++ " "  ++ show f2 ++ ")"
 showFormula (Q q t f) = "(" ++ q ++ " "  ++ show t ++ " . " ++ show f ++ ")"
 
-applyToTerms :: Formula -> (Term -> Term) -> Formula
+applyToTerms :: Formula a -> (Term -> Term) -> Formula a
 applyToTerms (P n args) f = P n $ L.map f args
 applyToTerms (B n l r) f = B n (applyToTerms l f) (applyToTerms r f)
 applyToTerms (Q n v l) f = Q n (f v) (applyToTerms l f)
 applyToTerms (N l) f = N (applyToTerms l f)
 
-te :: Term -> Formula -> Formula
+te :: Term -> Formula a -> Formula a
 te v@(Var _) f = Q "E" v f
 te t _ = error $ "Cannot quantify over non-variable term " ++ show t
 
-fa :: Term -> Formula -> Formula
+fa :: Term -> Formula a -> Formula a
 fa v@(Var _) f = Q "V" v f
 fa t _ = error $ "Cannot quantify over non-variable term " ++ show t
 
@@ -114,7 +113,7 @@ neg f = N f
 t = T
 f = F
 
-vars :: Formula -> Set Term
+vars :: Formula a -> Set Term
 vars T = S.empty
 vars F = S.empty
 vars (P name terms) = S.fold S.union S.empty $ S.fromList (L.map fvt terms)
@@ -122,7 +121,7 @@ vars (B _ f1 f2) = S.union (vars f1) (vars f2)
 vars (N f) = vars f
 vars (Q _ v f) = S.insert v (vars f)
 
-freeVars :: Formula -> Set Term
+freeVars :: Formula a -> Set Term
 freeVars T = S.empty
 freeVars F = S.empty
 freeVars (P name terms) = S.fold S.union S.empty $ S.fromList (L.map fvt terms)
@@ -130,27 +129,27 @@ freeVars (B _ f1 f2) = S.union (freeVars f1) (freeVars f2)
 freeVars (N f) = freeVars f
 freeVars (Q _ v f) = S.delete v (freeVars f)
 
-isAtom :: Formula -> Bool
+isAtom :: Formula a -> Bool
 isAtom (P _ _) = True
 isAtom _ = False
 
-stripNegations :: Formula -> Formula
+stripNegations :: Formula a -> Formula a
 stripNegations (N t) = t
 stripNegations f = f
 
-literalArgs :: Formula -> [Term]
+literalArgs :: (Show a) => Formula a -> [Term]
 literalArgs (P _ a) = a
 literalArgs (N (P _ a)) = a
 literalArgs l = error $ show l ++ " is not a literal"
 
-matchingLiterals :: Formula -> Formula -> Bool
+matchingLiterals :: (Show a) => Formula a -> Formula a -> Bool
 matchingLiterals (P n1 _) (N (P n2 _)) = n1 == n2
 matchingLiterals (N (P n1 _)) (P n2 _) = n1 == n2
 matchingLiterals (P _ _) (P _ _) = False
 matchingLiterals (N (P _ _)) (N (P _ _)) = False
 matchingLiterals l1 l2 = error $ show l1 ++ " or " ++ show l2 ++ " is not a literal"
 
-generalize :: Formula -> Formula
+generalize :: Formula a -> Formula a
 generalize f = applyList genFreeVar f
   where
     genFreeVar = L.map fa (S.toList (freeVars f))
@@ -164,14 +163,14 @@ variant vars x@(Var n) = case S.member x vars of
   True -> variant vars (Var (n ++ "'"))
   False -> x
   
-subFormula :: Map Term Term -> Formula -> Formula
+subFormula :: Map Term Term -> Formula a -> Formula a
 subFormula subst (P name args) = P name $ L.map (subTerm subst) args
 subFormula subst (B op f1 f2) = B op (subFormula subst f1) (subFormula subst f2)
 subFormula subst (N f) = N (subFormula subst f)
 subFormula subst q@(Q _ _ _) = subQuant subst q
 subFormula subst f = f
 
-subQuant :: Map Term Term -> Formula -> Formula
+subQuant :: Map Term Term -> Formula a -> Formula a
 subQuant subst (Q n v f) = case (M.filter (== v) subst) == M.empty of
   True -> Q n v (subFormula subst f)
   False -> Q n vNew $ subFormula (M.insert v vNew subst) f
@@ -179,7 +178,7 @@ subQuant subst (Q n v f) = case (M.filter (== v) subst) == M.empty of
     vNew = variant (freeVars (subFormula (M.delete v subst) f)) v
     
     
-toPNF :: Formula -> Formula
+toPNF :: Formula a -> Formula a
 toPNF = (transformFormula pullQuantifiers) .
         (transformFormula simplifyFormula) .
         (transformFormula pushNegation) .
@@ -201,14 +200,14 @@ pullQuantifiers f = f
 
 pullQ :: Bool ->
          Bool ->
-         Formula ->
-         (Term -> Formula -> Formula) ->
-         (Formula -> Formula -> Formula) ->
+         Formula a ->
+         (Term -> Formula a -> Formula a) ->
+         (Formula a -> Formula a -> Formula a) ->
          Term ->
          Term ->
-         Formula ->
-         Formula ->
-         Formula
+         Formula a ->
+         Formula a ->
+         Formula a
 pullQ l r f quant op x y p q =
   let z = variant (freeVars f) x in
   let ps = if l then subFormula (M.singleton x z) p else p in
@@ -243,29 +242,29 @@ replaceImp f = f
 replaceBic (B "<->" f1 f2) = con (imp f1 f2) (imp f2 f1)
 replaceBic f = f
 
-transformFormula :: (Formula -> Formula) -> Formula -> Formula
+transformFormula :: (Formula a -> Formula a) -> Formula a -> Formula a
 transformFormula tran (B op f1 f2) = tran (B op (transformFormula tran f1) (transformFormula tran f2))
 transformFormula tran (Q q x f) = tran (Q q x (transformFormula tran f))
 transformFormula tran (N f) = tran (N (transformFormula tran f))
 transformFormula tran f = tran f
 
 -- Conversion to Skolem form
-toSkolemForm :: Formula -> Formula
+toSkolemForm :: Formula a -> Formula a
 toSkolemForm = skolemize . toPNF
 
-skolemize :: Formula -> Formula
+skolemize :: Formula a -> Formula a
 skolemize f = (transformFormula removeExistential) $ replaceVarsWithSkolemFuncs f
 
-removeExistential :: Formula -> Formula
+removeExistential :: Formula a -> Formula a
 removeExistential (Q "E" v f) = f
 removeExistential f = f
 
-replaceVarsWithSkolemFuncs :: Formula -> Formula
+replaceVarsWithSkolemFuncs :: Formula a -> Formula a
 replaceVarsWithSkolemFuncs f = subFormula varsToSkolemFuncs f
   where
     varsToSkolemFuncs = collectSkolemFuncs f 0 []
     
-collectSkolemFuncs :: Formula -> Int -> [Term] -> Map Term Term
+collectSkolemFuncs :: Formula a -> Int -> [Term] -> Map Term Term
 collectSkolemFuncs (Q "E" v f) n vars = M.insert v (skf n vars) (collectSkolemFuncs f (n+1) vars)
 collectSkolemFuncs (Q "V" v f) n vars = collectSkolemFuncs f n (v:vars)
 collectSkolemFuncs _ _ _ = M.empty
@@ -274,32 +273,30 @@ skf :: Int -> [Term] -> Term
 skf n vars = Func ("skl" ++ show n) vars
 
 -- Conversion to clausal form
-type Clause = [Formula]
-
-toClausalForm :: Formula -> [Clause]
+toClausalForm :: (Show a) => Formula a -> [[Formula a]]
 toClausalForm = splitClauses . removeUniversals . distributeDisjunction . toSkolemForm
 
-distributeDisjunction :: Formula -> Formula
+distributeDisjunction :: (Formula a) -> (Formula a)
 distributeDisjunction f = transformFormula distrDis f
 
-distrDis :: Formula -> Formula
+distrDis :: (Formula a) -> (Formula a)
 distrDis (B "|" (B "&" l r) f) = (B "&" (B "|" l f) (B "|" r f))
 distrDis (B "|" f (B "&" l r)) = (B "&" (B "|" f l) (B "|" f r))
 distrDis f = f
 
-removeUniversals :: Formula -> Formula
+removeUniversals :: Formula a -> Formula a
 removeUniversals (Q "V" v f) = removeUniversals f
 removeUniversals f = f
 
-splitClauses :: Formula -> [Clause]
+splitClauses :: Formula a -> [[Formula a]]
 splitClauses (B "&" l r) = (splitClauses l) ++ (splitClauses r)
 splitClauses f = [splitDis f]
 
-splitDis :: Formula -> Clause
+splitDis :: Formula a -> [Formula a]
 splitDis (B "|" l r) = (splitDis l) ++ (splitDis r)
 splitDis f = [f]
 
-isTautology :: Clause -> Bool
+isTautology :: [Formula a] -> Bool
 isTautology c = L.length (L.intersect atoms negAtoms) > 0
   where
     atoms = L.filter isAtom c

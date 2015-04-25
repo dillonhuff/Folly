@@ -8,13 +8,13 @@ import Data.List as L
 
 import Folly.Formula
 
-data Theorem = Theorem [Formula] Formula
+data Theorem a = Theorem [Formula a] (Formula a)
                deriving (Eq, Ord)
 
-instance Show Theorem where
+instance (Show a) => Show (Theorem a) where
   show = showThm
 
-showThm :: Theorem -> String
+showThm :: (Show a) => Theorem a -> String
 showThm (Theorem h c) = "Hypothesis:\n" ++ hypStr ++ "\n\n|=\n\n" ++ conclStr
   where
     hypStr = (L.concat $ L.intersperse "\n" $ L.map show h)
@@ -22,8 +22,8 @@ showThm (Theorem h c) = "Hypothesis:\n" ++ hypStr ++ "\n\n|=\n\n" ++ conclStr
 
 theorem = Theorem
 
-hypothesis :: Theorem -> [Formula]
+hypothesis :: Theorem a -> [Formula a]
 hypothesis (Theorem hp _) = hp
 
-conclusion :: Theorem -> Formula
+conclusion :: Theorem a -> Formula a
 conclusion (Theorem _ c) = c

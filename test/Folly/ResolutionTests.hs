@@ -11,6 +11,7 @@ allResolutionTests = do
 testIsValid =
   testFunction isValid isValidTestCases
 
+isValidTestCases :: [(Theorem String, Bool)]
 isValidTestCases =
   [(theorem [] (fa (var "a") (dis (pr "d" [var "a"]) (neg (pr "d" [var "a"])))), True),
    (theorem [] (pr "d" [var "k"]), False),
@@ -28,6 +29,7 @@ isValidTestCases =
    (theorem groupWithEquals (imp (con (con (con (pr "=" [func "*" [var "x", var "y"], constant "1"]) (pr "=" [func "*" [var "y", var "x"], constant "1"])) (pr "=" [func "*" [var "x", var "z"], constant "1"])) (pr "=" [func "*" [var "z", var "x"], constant "1"])) (pr "=" [var "y", var "z"])), True),
    (theorem groupWithEquals (imp (fa (var "x") (con (pr "=" [func "*" [var "x", var "z"], constant "1"]) (pr "=" [func "*" [var "z", var "x"], constant "1"]))) (pr "=" [var "z", constant "1"])), True)]
 
+equalityAxioms :: [Formula String]
 equalityAxioms =
   [(fa (var "x") (pr "=" [var "x", var "x"])),
    (fa (var "x") (fa (var "y") (imp (pr "=" [var "x", var "y"]) (pr "=" [var "y", var "x"])))),
