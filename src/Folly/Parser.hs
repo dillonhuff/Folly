@@ -12,7 +12,7 @@ import Folly.Lexer as Lex
 import Folly.Theorem
 import Folly.Utils
 
-parseTheorem :: [Token] -> Error (Theorem a)
+parseTheorem :: [Token] -> Error Theorem
 parseTheorem toks = case parse parseTheoremToks "PARSER" toks of
   Left err -> Failed $ show err
   Right thm -> Succeeded thm
@@ -32,7 +32,7 @@ parseHypothesis = do
   hypothesis <- many parseForm
   return hypothesis
 
-parseFormula :: [Token] -> Error (Formula a)
+parseFormula :: [Token] -> Error (Formula)
 parseFormula toks = case parse parseForm "PARSER" toks of
   Left err -> Failed $ show err
   Right formula -> Succeeded formula
@@ -73,7 +73,7 @@ parseQuantification = do
     "E" -> return $ te (var (name varName)) form
     _ -> error $ show quantType ++ " is not a quantifier"
 
-parseNeg :: (Monad m) => ParsecT [Token] u m (Formula a -> Formula a)
+parseNeg :: (Monad m) => ParsecT [Token] u m (Formula -> Formula)
 parseNeg = do
   propTok "~"
   return $ neg
@@ -94,7 +94,7 @@ parseBic = do
   propTok "<->"
   return $ bic
 
-parsePredicate :: (Monad m) => ParsecT [Token] u m (Formula a)
+parsePredicate :: (Monad m) => ParsecT [Token] u m (Formula)
 parsePredicate = do
   nameTok <- predicateTok
   propTok "["

@@ -9,6 +9,15 @@ data Error a =
   Failed String
   deriving (Show)
 
+instance Applicative Error where
+  pure = Succeeded
+  (Succeeded f) <*> (Succeeded x) = Succeeded (f x)
+  (Failed m) <*> _ = Failed m
+
+instance Functor Error where
+  fmap f (Succeeded a) = Succeeded (f a)
+  fmap _ (Failed m) = Failed m
+
 instance Monad Error where
   return a = Succeeded a
   (Succeeded a) >>= f = f a

@@ -9,7 +9,7 @@ import Folly.Utils
 allParserTests = do
   testFunction (\x -> ((>>=) x parseFormula)) (map (\ (x, y) -> (lexer x, y)) parseFormulaCases)
 
-parseFormulaCases :: [(String, Error (Formula String))]
+parseFormulaCases :: [(String, Error Formula)]
 parseFormulaCases =
   [("Dog[ a ]", Succeeded $ pr "Dog" [var "a"]),
    ("~Super[ k, kill(a, b)]", Succeeded $ neg (pr "Super" [var "k", func "kill" [var "a", var "b"]])),

@@ -31,7 +31,7 @@ fvtCases =
 testVars =
   testFunction vars varsCases
 
-varsCases :: [(Formula String, Set Term)]
+varsCases :: [(Formula, Set Term)]
 varsCases =
   [(t, S.empty),
    (f, S.empty),
@@ -45,7 +45,7 @@ varsCases =
 testFreeVars =
   testFunction freeVars freeVarCases
 
-freeVarCases :: [(Formula String, Set Term)]
+freeVarCases :: [(Formula, Set Term)]
 freeVarCases =
   [(t, S.empty),
    (f, S.empty),
@@ -58,7 +58,7 @@ freeVarCases =
 testGeneralize =
   testFunction generalize generalizeCases
 
-generalizeCases :: [(Formula String, Formula String)]
+generalizeCases :: [(Formula, Formula)]
 generalizeCases =
   [(t, t),
    (f, f),
@@ -93,7 +93,7 @@ testSubFormula =
 testFormSub = M.fromList
               [(var "x", var "a"), (var "y", var "l")]
 
-subFormulaCases :: [(Formula String, Formula String)]
+subFormulaCases :: [(Formula, Formula)]
 subFormulaCases =
   [(t, t),
    (f, f),
@@ -111,7 +111,7 @@ subFormulaCases =
 testToPNF =
   testFunction toPNF pnfCases
 
-pnfCases :: [(Formula String, Formula String)]
+pnfCases :: [(Formula, Formula)]
 pnfCases =
   [(t, t),
    (f, f),
@@ -145,7 +145,7 @@ pnfCases =
 testToPNFPullQuants =
   testFunction toPNF pullQuantsCases
 
-pullQuantsCases :: [(Formula String, Formula String)]
+pullQuantsCases :: [(Formula, Formula)]
 pullQuantsCases =
   [(con (fa (var "x") (pr "d" [var "x"])) (fa (var "y") (pr "k" [var "y"])),
     fa (var "x") (con (pr "d" [var "x"]) (pr "k" [var "x"]))),
@@ -173,7 +173,7 @@ pullQuantsCases =
 testSkolemize =
   testFunction toSkolemForm skolemizeCases
 
-skolemizeCases :: [(Formula String, Formula String)]
+skolemizeCases :: [(Formula, Formula)]
 skolemizeCases =
   [(pr "d" [var "a"], pr "d" [var "a"]),
    (te (var "x") (pr "d" [var "x"]), pr "d" [skf 0 []]),
@@ -189,7 +189,7 @@ skolemizeCases =
 testToClausalForm =
   testFunction toClausalForm clausalFormCases
 
-clausalFormCases :: [(Formula String, [[Formula String]])]
+clausalFormCases :: [(Formula, [[Formula]])]
 clausalFormCases =
   [(pr "d" [var "no"], [[pr "d" [var "no"]]]),
    (fa (var "x") (con (pr "a" [var "x"]) (pr "d" [constant "P"])),
