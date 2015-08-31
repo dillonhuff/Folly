@@ -16,10 +16,10 @@ isValid t = not $ resolve $ deleteTautologies $ clauseSet
     clauses = L.map dnf $ uniqueVarNames $ L.concat $ L.map toClausalForm formulas
     clauseSet = S.fromList clauses
 
-resolve :: Set [Formula] -> Bool
-resolve cls = case S.member [] cls of
+resolve :: Set DNF -> Bool
+resolve cls = error "resolve" {-case S.member [] cls of
   True -> False
-  False -> resolveIter [cls]
+  False -> resolveIter [cls]-}
 
 resolveIter :: [Set [Formula]] -> Bool
 resolveIter [] = error "Empty list of clause sets"
