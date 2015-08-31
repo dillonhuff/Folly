@@ -4,6 +4,7 @@ import Data.List as L
 import Data.Maybe
 import Data.Set as S
 
+import Folly.DNF
 import Folly.Formula
 import Folly.Theorem
 import Folly.Unification
@@ -12,7 +13,7 @@ isValid :: Theorem -> Bool
 isValid t = not $ resolve $ deleteTautologies $ clauseSet
   where
     formulas = (neg (conclusion t)) : (hypothesis t)
-    clauses = uniqueVarNames $ L.concat $ L.map toClausalForm formulas
+    clauses = L.map dnf $ uniqueVarNames $ L.concat $ L.map toClausalForm formulas
     clauseSet = S.fromList clauses
 
 resolve :: Set [Formula] -> Bool
