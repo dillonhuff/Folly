@@ -33,23 +33,33 @@ lovesAnimals a = pr "LovesAnimals" [a]
 
 isValidTestCases :: [(Theorem, Bool)]
 isValidTestCases =
-  [(theorem [] (fa a (dis (dog a) (neg (dog a)))), True),
-   (theorem [] (dog a), False),
-   (theorem [dog x] (dog x), True),
-   (theorem
-    [(fa d (imp (dog d) (loves john d))), dog fido]
-    (loves john fido), True),
-   (theorem
-    [(fa p (imp (te d (con (dog d) (owns p d))) (lovesAnimals p))),
-     (imp (lovesAnimals x) (fa a (neg (kills x a)))),
-     owns john fido,
-     dog fido]
-    (fa a (neg (kills john a))), True),
-   (theorem groupAxioms (imp (con (con (con (eq (times x y) one) (eq (times y x) one)) (eq (times x z) one)) (eq (times z x) one)) (eq y z)), True),
-   (theorem groupAxioms (imp (fa x (con (eq (times x z) one) (eq (times z x) one))) (eq z one)), True),
-   (nonThm, False)]
+  [(dog1, True),
+   (dog2, False),
+   (dog3, True),
+   (dog4, True),
+   (dog5, True),
+   (group1, True),
+   (group2, True),
+   (group3, False)]
 
-nonThm =
+dog1 = theorem [] (fa a (dis (dog a) (neg (dog a))))
+dog2 = theorem [] (dog a)
+dog3 = theorem [dog x] (dog x)
+dog4 = theorem [(fa d (imp (dog d) (loves john d))), dog fido] (loves john fido)
+dog5 = theorem
+       [(fa p (imp (te d (con (dog d) (owns p d))) (lovesAnimals p))),
+        (imp (lovesAnimals x) (fa a (neg (kills x a)))),
+        owns john fido,
+        dog fido]
+       (fa a (neg (kills john a)))
+group1 = theorem
+         groupAxioms
+         (imp
+          (con (con (con (eq (times x y) one) (eq (times y x) one)) (eq (times x z) one)) (eq (times z x) one))
+          (eq y z))
+group2 = theorem groupAxioms (imp (fa x (con (eq (times x z) one) (eq (times z x) one))) (eq z one))
+
+group3 =
   theorem groupAxioms (fa x (fa y (eq (times x y) (times y x))))
 
 equalityAxioms :: [Formula]
