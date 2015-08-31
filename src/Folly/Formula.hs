@@ -5,13 +5,12 @@ module Folly.Formula(
   appendVarName,
   var, func, constant,
   te, fa, pr, con, dis, neg, imp, bic, t, f,
-  vars, freeVars,
+  vars, freeVars, isAtom, stripNegations,
   generalize, subFormula,
   applyToTerms,
   literalArgs,
   toPNF, toSkolemForm, skf,
   toClausalForm,
-  isTautology,
   matchingLiterals) where
 
 import Control.Monad
@@ -295,9 +294,3 @@ splitClauses f = [splitDis f]
 splitDis :: Formula -> [Formula]
 splitDis (B "|" l r) = (splitDis l) ++ (splitDis r)
 splitDis f = [f]
-
-isTautology :: [Formula] -> Bool
-isTautology c = L.length (L.intersect atoms negAtoms) > 0
-  where
-    atoms = L.filter isAtom c
-    negAtoms = L.map stripNegations $ L.filter (not . isAtom) c

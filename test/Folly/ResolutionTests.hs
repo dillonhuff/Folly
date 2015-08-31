@@ -38,6 +38,7 @@ isValidTestCases =
    (dog3, True),
    (dog4, True),
    (dog5, True),
+   (dog6, False),
    (group1, True),
    (group2, True),
    (group3, False)]
@@ -52,6 +53,8 @@ dog5 = theorem
         owns john fido,
         dog fido]
        (fa a (neg (kills john a)))
+dog6 = theorem [] (con (dog a) (neg $ dog a))
+
 group1 = theorem
          groupAxioms
          (imp
