@@ -11,31 +11,55 @@ allResolutionTests = do
 testIsValid =
   testFunction isValid isValidTestCases
 
+x = var "x"
+y = var "y"
+z = var "z"
+a = var "a"
+d = var "d"
+p = var "p"
+
+one = constant "1"
+john = constant "John"
+fido = constant "Fido"
+
+times a b = func "*" [a, b]
+
+eq a b = pr "=" [a, b]
+dog d = pr "Dog" [d]
+owns a b = pr "Owns" [a, b]
+kills a b = pr "Kills" [a, b]
+loves a b = pr "Loves" [a, b]
+lovesAnimals a = pr "LovesAnimals" [a]
+
 isValidTestCases :: [(Theorem, Bool)]
 isValidTestCases =
-  [(theorem [] (fa (var "a") (dis (pr "d" [var "a"]) (neg (pr "d" [var "a"])))), True),
-   (theorem [] (pr "d" [var "k"]), False),
-   (theorem [pr "Dog" [var "x"]] (pr "Dog" [var "x"]), True),
+  [(theorem [] (fa a (dis (dog a) (neg (dog a)))), True),
+   (theorem [] (dog a), False),
+   (theorem [dog x] (dog x), True),
    (theorem
-    [(fa (var "d") (imp (pr "Dog" [var "d"]) (pr "Loves" [constant "John", var "d"]))),
-     (pr "Dog" [constant "Fido"])]
-    (pr "Loves" [constant "John", constant "Fido"]), True),
+    [(fa d (imp (dog d) (loves john d))), dog fido]
+    (loves john fido), True),
    (theorem
-    [(fa (var "p") (imp (te (var "d") (con (pr "Dog" [var "d"]) (pr "Owns" [var "p", var "d"]))) (pr "LovesAnimals" [var "p"]))),
-     (imp (pr "LovesAnimals" [var "x"]) (fa (var "a") (neg (pr "Kills" [var "x", var "a"])))),
-     (pr "Owns" [constant "John", constant "Fido"]),
-     (pr "Dog" [constant "Fido"])]
-    (fa (var "a") (neg (pr "Kills" [constant "John", var "a"]))), True),
-   (theorem groupWithEquals (imp (con (con (con (pr "=" [func "*" [var "x", var "y"], constant "1"]) (pr "=" [func "*" [var "y", var "x"], constant "1"])) (pr "=" [func "*" [var "x", var "z"], constant "1"])) (pr "=" [func "*" [var "z", var "x"], constant "1"])) (pr "=" [var "y", var "z"])), True),
-   (theorem groupWithEquals (imp (fa (var "x") (con (pr "=" [func "*" [var "x", var "z"], constant "1"]) (pr "=" [func "*" [var "z", var "x"], constant "1"]))) (pr "=" [var "z", constant "1"])), True)]
+    [(fa p (imp (te d (con (dog d) (owns p d))) (lovesAnimals p))),
+     (imp (lovesAnimals x) (fa a (neg (kills x a)))),
+     owns john fido,
+     dog fido]
+    (fa a (neg (kills john a))), True),
+   (theorem groupAxioms (imp (con (con (con (eq (times x y) one) (eq (times y x) one)) (eq (times x z) one)) (eq (times z x) one)) (eq y z)), True),
+   (theorem groupAxioms (imp (fa x (con (eq (times x z) one) (eq (times z x) one))) (eq z one)), True),
+   (nonThm, False)]
+
+nonThm =
+  theorem groupAxioms (fa x (fa y (eq (times x y) (times y x))))
 
 equalityAxioms :: [Formula]
 equalityAxioms =
-  [(fa (var "x") (pr "=" [var "x", var "x"])),
-   (fa (var "x") (fa (var "y") (imp (pr "=" [var "x", var "y"]) (pr "=" [var "y", var "x"])))),
-   (fa (var "x") (fa (var "y") (fa (var "z") (imp (con (pr "=" [var "x", var "y"]) (pr "=" [var "y", var "z"])) (pr "=" [var "x", var "z"])))))]
+   [(fa x (pr "=" [x, x])),
+    (fa x (fa y (imp (eq x y) (eq y x)))),
+    (fa x (fa y (fa z (imp (con (eq x y) (eq y z)) (eq x z)))))]
 
-groupWithEquals =
-  [(fa (var "x") (te (var "y") (con (pr "=" [func "*" [var "x", var "y"], constant "1"]) (pr "=" [func "*" [var "y", var "x"], constant "1"])))),
-   (fa (var "x") (fa (var "y") (fa (var "z") (pr "=" [func "*" [var "x", func "*" [var "y", var "z"]], func "*" [func "*" [var "x", var "y"], var "z"]])))),
-   (fa (var "x") (con (pr "=" [func "*" [var "x", constant "1"], var "x"]) (pr "=" [func "*" [constant "1", var "x"], constant "x"])))] ++ equalityAxioms
+groupAxioms =
+   [(fa x (te y (con (eq (times x y) one) (eq (times y x) one)))),
+    (fa x (fa y (fa z (eq (times x (times y z)) (times (times x y) z))))),
+    (fa x (con (eq (times x one) x) (eq (times one x) x)))] ++
+   equalityAxioms
