@@ -15,10 +15,10 @@ instance Show Theorem where
   show = showThm
 
 showThm :: Theorem -> String
-showThm (Theorem h c) = "Hypothesis:\n" ++ hypStr ++ "\n\n|=\n\n" ++ conclStr
+showThm (Theorem h c) = "\n" ++ hypStr ++ "\n\n|=\n\n" ++ conclStr
   where
     hypStr = (L.concat $ L.intersperse "\n" $ L.map show h)
-    conclStr = "Conclusion:\n" ++ show c
+    conclStr = show c
 
 theorem = Theorem
 

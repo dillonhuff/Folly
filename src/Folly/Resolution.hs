@@ -1,5 +1,4 @@
-module Folly.Resolution(
-  isValid) where
+module Folly.Resolution(isValid) where
 
 import Data.List as L
 import Data.Maybe
@@ -26,7 +25,7 @@ resolveIter [] = error "Empty list of clause sets"
 resolveIter clauseSets = case S.size newClauses == 0 of
   True -> True
   False -> case S.member [] newClauses of
-    True -> False
+    True ->  False -- error $ "resolveIter: Clauses\n" ++ (show $ L.length $ S.toList newClauses) False
     False -> resolveIter (newClauses:clauseSets)
   where
     newClauses = case L.length clauseSets of
@@ -42,8 +41,9 @@ generateNewClauses recent old = deleteTautologies $ newClauses
 resolvedClauses :: [Formula] -> [Formula] -> Set [Formula]
 resolvedClauses left right = S.fromList resClauses
   where
-    mResClauses = L.map (\x -> (L.map (\y -> tryToResolve x left y right) right)) left
-    resClauses = L.map fromJust $ L.filter (/= Nothing) $ L.concat mResClauses 
+    possibleResCombos = [(x, left, y, right) | x <- left, y <- right]
+    mResClauses = L.map (\(x, l, y, r) -> tryToResolve x l y r) possibleResCombos
+    resClauses = L.map fromJust $ L.filter (/= Nothing) mResClauses 
 
 tryToResolve :: Formula -> [Formula] -> Formula -> [Formula] -> Maybe [Formula]
 tryToResolve leftLiteral leftClause rightLiteral rightClause =
@@ -54,8 +54,11 @@ tryToResolve leftLiteral leftClause rightLiteral rightClause =
 unifiedResolvedClause :: Formula -> [Formula] -> Formula -> [Formula] -> Maybe [Formula]
 unifiedResolvedClause lLit lc rLit rc =
   case mostGeneralUnifier $ zip (literalArgs lLit) (literalArgs rLit) of
-   Just mgu -> Just $ L.map (\lit -> applyToTerms lit (applyUnifier mgu)) ((L.delete lLit lc) ++ (L.delete rLit rc))
+   Just mgu ->
+     Just $ L.map (\lit -> applyToTerms lit (applyUnifier mgu)) resolvedClause
    Nothing -> Nothing
+  where
+    resolvedClause = (L.delete lLit lc) ++ (L.delete rLit rc)
 
 uniqueVarNames :: [[Formula]] -> [[Formula]]
 uniqueVarNames cls = zipWith attachSuffix cls (L.map show [1..length cls])
@@ -68,3 +71,11 @@ addSuffixToVarNames suffix form = applyToTerms form (appendVarName suffix)
 
 deleteTautologies :: Set [Formula] -> Set [Formula]
 deleteTautologies clauses = S.filter (not . isTautology) clauses
+
+prettyClauseSets :: [Set [Formula]] -> String
+prettyClauseSets css =
+  L.concatMap prettyClauseSet css
+
+prettyClauseSet cs =
+  let formulas = S.toList cs in
+   show formulas ++ "\n\n"
