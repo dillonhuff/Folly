@@ -27,9 +27,7 @@ resolveIter clauseSets = case S.size newClauses == 0 of
     True ->  False
     False -> resolveIter (newClauses:clauseSets)
   where
-    newClauses = case L.length clauseSets of
-      1 -> generateNewClauses (head clauseSets) (head clauseSets)
-      _ -> generateNewClauses (head clauseSets) (L.foldl S.union S.empty (tail clauseSets))
+    newClauses = generateNewClauses (head clauseSets) (L.foldl S.union S.empty clauseSets)
 
 generateNewClauses :: Set Clause -> Set Clause -> Set Clause
 generateNewClauses recent old = deleteTautologies $ newClauses
@@ -45,11 +43,3 @@ attachSuffix cls suffix = L.map (addSuffixToVarNames suffix) cls
 
 addSuffixToVarNames :: String -> Formula -> Formula
 addSuffixToVarNames suffix form = applyToTerms form (appendVarName suffix)
-
-prettyClauseSets :: [Set [Formula]] -> String
-prettyClauseSets css =
-  L.concatMap prettyClauseSet css
-
-prettyClauseSet cs =
-  let formulas = S.toList cs in
-   show formulas ++ "\n\n"
