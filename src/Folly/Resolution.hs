@@ -18,7 +18,7 @@ isValid t = not $ resolve $ deleteTautologies $ clauseSet
 
 resolve :: Set [Formula] -> Bool
 resolve cls = case S.member [] cls of
-  True -> True
+  True -> False
   False -> resolveIter [cls]
 
 resolveIter :: [Set [Formula]] -> Bool
@@ -36,13 +36,13 @@ resolveIter clauseSets = case S.size newClauses == 0 of
 generateNewClauses :: Set [Formula] -> Set [Formula] -> Set [Formula]
 generateNewClauses recent old = deleteTautologies $ newClauses
   where
-    newClauses = S.fold S.union S.empty $ S.map (\ c -> genNewClauses c old) recent
-    genNewClauses c cs = S.fold S.union S.empty $ S.map (\ x -> resolvedClauses c x) cs
+    newClauses = S.fold S.union S.empty $ S.map (\c -> genNewClauses c old) recent
+    genNewClauses c cs = S.fold S.union S.empty $ S.map (\x -> resolvedClauses c x) cs
 
 resolvedClauses :: [Formula] -> [Formula] -> Set [Formula]
 resolvedClauses left right = S.fromList resClauses
   where
-    mResClauses = L.map (\ x -> (L.map (\ y -> tryToResolve x left y right) right)) left
+    mResClauses = L.map (\x -> (L.map (\y -> tryToResolve x left y right) right)) left
     resClauses = L.map fromJust $ L.filter (/= Nothing) $ L.concat mResClauses 
 
 tryToResolve :: Formula -> [Formula] -> Formula -> [Formula] -> Maybe [Formula]
@@ -52,9 +52,10 @@ tryToResolve leftLiteral leftClause rightLiteral rightClause =
     False -> Nothing
 
 unifiedResolvedClause :: Formula -> [Formula] -> Formula -> [Formula] -> Maybe [Formula]
-unifiedResolvedClause lLit lc rLit rc = case mostGeneralUnifier $ zip (literalArgs lLit) (literalArgs rLit) of
-  Just mgu -> Just $ L.map (\ lit -> applyToTerms lit (applyUnifier mgu)) ((L.delete lLit lc) ++ (L.delete rLit rc))
-  Nothing -> Nothing
+unifiedResolvedClause lLit lc rLit rc =
+  case mostGeneralUnifier $ zip (literalArgs lLit) (literalArgs rLit) of
+   Just mgu -> Just $ L.map (\lit -> applyToTerms lit (applyUnifier mgu)) ((L.delete lLit lc) ++ (L.delete rLit rc))
+   Nothing -> Nothing
 
 uniqueVarNames :: [[Formula]] -> [[Formula]]
 uniqueVarNames cls = zipWith attachSuffix cls (L.map show [1..length cls])
