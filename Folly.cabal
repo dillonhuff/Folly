@@ -2,7 +2,7 @@
 --  see http://haskell.org/cabal/users-guide/
 
 name:                Folly
-version:             0.1.4.6
+version:             0.1.5.1
 synopsis:            A first order logic library in Haskell
 description:         An implementation of first order logic in Haskell that
 		     includes a library of modules for incorporating first
@@ -15,12 +15,12 @@ author:              Dillon Huff
 maintainer:          Dillon Huff
 homepage:	     https://github.com/dillonhuff/Folly
 -- copyright:           
-category:            Theorem proving
+category:            Theorem Provers
 build-type:          Simple
 cabal-version:       >=1.8
 
 library
-  exposed-modules:     Folly.Formula, Folly.Unification, Folly.Resolution, Folly.Utils, Folly.Theorem, Folly.Lexer, Folly.Parser
+  exposed-modules:     Folly.Formula, Folly.Unification, Folly.Resolution, Folly.Utils, Folly.Theorem, Folly.Lexer, Folly.Parser, Folly.Clause
   build-depends:       base < 6, containers, parsec
   hs-source-dirs:      src
 
@@ -31,7 +31,7 @@ executable Folly
   hs-source-dirs:      src
 
 executable Folly-tests
-  main-is:             TestMain.hs
-  other-modules:       Folly.FormulaTests, Folly.LexerTests, Folly.ParserTests, Folly.ResolutionTests, Folly.UnificationTests, Folly.TestUtils
+  main-is:             Main.hs
+  other-modules:       Folly.FormulaTests, Folly.LexerTests, Folly.ParserTests, Folly.ResolutionTests, Folly.UnificationTests, Folly.TestUtils, Folly.Clause
   build-depends:       base < 6, HUnit, containers, parsec
   hs-source-dirs:      test, src
