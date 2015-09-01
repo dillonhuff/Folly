@@ -1,4 +1,4 @@
-module TestMain(main) where
+module Main(main) where
 
 import Folly.FormulaTests
 import Folly.LexerTests
