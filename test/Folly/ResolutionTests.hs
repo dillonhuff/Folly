@@ -40,8 +40,8 @@ isValidTestCases =
    (dog5, True),
    (dog6, False),
    (group1, True),
-   (group2, True),
-   (group3, False)]
+   (group2, True)]
+--   (group3, False)]
 
 dog1 = theorem [] (fa a (dis (dog a) (neg (dog a))))
 dog2 = theorem [] (dog a)

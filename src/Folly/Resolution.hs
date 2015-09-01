@@ -24,13 +24,10 @@ resolveIter [] = error "Empty list of clause sets"
 resolveIter clauseSets = case S.size newClauses == 0 of
   True -> True
   False -> case S.member C.empty newClauses of
-    True ->  error $ showTrace $ L.head $ L.filter (== C.empty) $ S.toList newClauses
+    True -> False
     False -> resolveIter (newClauses:clauseSets)
   where
-    newClauses =
-      case L.length clauseSets of
-       1 -> generateNewClauses (head clauseSets) (L.foldl S.union S.empty clauseSets)
-       _ -> generateNewClauses (head clauseSets) (L.foldl S.union S.empty $ L.tail clauseSets)
+    newClauses = generateNewClauses (head clauseSets) (L.foldl S.union S.empty clauseSets)
 
 generateNewClauses :: Set Clause -> Set Clause -> Set Clause
 generateNewClauses recent old = deleteTautologies $ newClauses
