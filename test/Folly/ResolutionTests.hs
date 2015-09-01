@@ -65,6 +65,8 @@ group2 = theorem groupAxioms (imp (fa x (con (eq (times x z) one) (eq (times z x
 group3 =
   theorem groupAxioms (fa x (fa y (eq (times x y) (times y x))))
 
+group4 = theorem (tail equalityAxioms) (head equalityAxioms)
+
 equalityAxioms :: [Formula]
 equalityAxioms =
    [(fa x (pr "=" [x, x])),

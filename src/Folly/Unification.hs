@@ -1,7 +1,7 @@
-module Folly.Unification(
-  applyUnifier,
-  mostGeneralUnifier,
-  unifier) where
+module Folly.Unification(Unifier,
+                         applyUnifier,
+                         mostGeneralUnifier,
+                         unifier) where
 
 import Control.Monad
 import Data.List as L

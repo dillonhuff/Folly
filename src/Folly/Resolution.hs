@@ -11,7 +11,7 @@ isValid :: Theorem -> Bool
 isValid t = not $ resolve $ deleteTautologies $ clauseSet
   where
     formulas = (neg (conclusion t)) : (hypothesis t)
-    clauses = L.map (clause . S.fromList) $ uniqueVarNames $ L.concat $ L.map toClausalForm formulas
+    clauses = L.map (givenClause . S.fromList) $ uniqueVarNames $ toClausalForm $ L.foldr (\l r -> con l r) (head formulas) (tail formulas)
     clauseSet = S.fromList clauses
 
 resolve :: Set Clause -> Bool
@@ -24,10 +24,13 @@ resolveIter [] = error "Empty list of clause sets"
 resolveIter clauseSets = case S.size newClauses == 0 of
   True -> True
   False -> case S.member C.empty newClauses of
-    True ->  False
+    True ->  error $ showTrace $ L.head $ L.filter (== C.empty) $ S.toList newClauses
     False -> resolveIter (newClauses:clauseSets)
   where
-    newClauses = generateNewClauses (head clauseSets) (L.foldl S.union S.empty clauseSets)
+    newClauses =
+      case L.length clauseSets of
+       1 -> generateNewClauses (head clauseSets) (L.foldl S.union S.empty clauseSets)
+       _ -> generateNewClauses (head clauseSets) (L.foldl S.union S.empty $ L.tail clauseSets)
 
 generateNewClauses :: Set Clause -> Set Clause -> Set Clause
 generateNewClauses recent old = deleteTautologies $ newClauses
