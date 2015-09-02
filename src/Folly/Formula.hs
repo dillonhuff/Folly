@@ -2,7 +2,7 @@ module Folly.Formula(
   Term, Formula,
   fvt, subTerm, isVar, isConst, isFunc,
   funcName, funcArgs,
-  appendVarName,
+  appendVarName, collectVars,
   var, func, constant,
   te, fa, pr, con, dis, neg, imp, bic, t, f,
   vars, freeVars, isAtom, stripNegations,
@@ -94,6 +94,13 @@ applyToTerms (P n args) f = P n $ L.map f args
 applyToTerms (B n l r) f = B n (applyToTerms l f) (applyToTerms r f)
 applyToTerms (Q n v l) f = Q n (f v) (applyToTerms l f)
 applyToTerms (N l) f = N (applyToTerms l f)
+
+collectVars :: Formula -> [Term]
+collectVars (P _ args) = L.concatMap (\t -> if isVar t then [t] else []) args
+collectVars (N f) = collectVars f
+collectVars (B _ a b) = collectVars a ++ collectVars b
+collectVars (Q _ v f) = v:(collectVars f)
+collectVars _ = []
 
 te :: Term -> Formula -> Formula
 te v@(Var _) f = Q "E" v f

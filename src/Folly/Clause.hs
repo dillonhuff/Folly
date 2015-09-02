@@ -5,6 +5,7 @@ module Folly.Clause(Clause,
                     showTrace) where
 
 import Data.List as L
+import Data.Map as M
 import Data.Maybe
 import Data.Set as S
 
@@ -21,14 +22,20 @@ instance Ord Clause where
   (<=) (Clause cs1 _) (Clause cs2 _) = cs1 <= cs2
 
 givenClause cs = Clause cs Given
-resolvedClause cs lc rc mgu = Clause cs (Resolved lc rc mgu)
+resolvedClause cs lc rc mgu = Clause cs (Resolved lc rc mgu M.empty)
 
 empty = Clause S.empty Given
 
 data Justification
   = Given
-  | Resolved Clause Clause Unifier
+  | Resolved Clause Clause Unifier Unifier
     deriving (Eq, Ord, Show)
+
+applySub :: Unifier -> Clause -> Clause
+applySub u c@(Clause lits j) =
+  Clause (S.map (\lit -> applyToTerms lit (applyUnifier u)) lits) j
+
+allVars (Clause cs _) = L.concatMap collectVars $ S.toList cs
 
 deleteTautologies :: Set Clause -> Set Clause
 deleteTautologies formulas = S.filter (not . dnfIsTautology) formulas
@@ -43,7 +50,12 @@ isTautology c = S.size (S.intersection atoms negAtoms) > 0
     negAtoms = S.map stripNegations $ S.filter (not . isAtom) c
 
 resolvedClauses :: Clause -> Clause -> Set Clause
-resolvedClauses l@(Clause left _) r@(Clause right _) =
+resolvedClauses c1 c2 =
+  let rho = uniqueVarSub (allVars c1) (allVars c2) in
+   resolvedClausesU (applySub rho c1) c2
+
+resolvedClausesU :: Clause -> Clause -> Set Clause
+resolvedClausesU l@(Clause left _) r@(Clause right _) =
   case left == right of
    True ->  S.empty
    False -> S.fromList resClauses
@@ -77,7 +89,7 @@ mkResolvedClause mgu lits lc rc =
 showTrace c = showTraceRec 0 c
 
 showTraceRec n c@(Clause cs Given) = (ind n) ++ "GIVEN " ++ show cs
-showTraceRec n c@(Clause cs (Resolved a b u)) =
+showTraceRec n c@(Clause cs (Resolved a b u _)) =
   (ind n) ++ show cs ++ "\t" ++ show u ++ "\n" ++
   showTraceRec (n+1) a ++ "\n" ++
   showTraceRec (n+1) b

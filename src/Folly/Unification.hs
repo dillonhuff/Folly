@@ -1,7 +1,8 @@
 module Folly.Unification(Unifier,
                          applyUnifier,
                          mostGeneralUnifier,
-                         unifier) where
+                         unifier,
+                         uniqueVarSub) where
 
 import Control.Monad
 import Data.List as L
@@ -11,6 +12,13 @@ import Data.Set as S
 import Folly.Formula
 
 type Unifier = Map Term Term
+
+uniqueVarSub :: [Term] -> [Term] -> Unifier
+uniqueVarSub lt rt =
+  let newVars = L.map (\v -> appendVarName "z" v) lt in
+   case L.intersect newVars rt /= [] of
+    True -> error $ "uniquVarSub: bad args " ++ show lt ++ " " ++ show rt
+    False -> M.fromList $ L.zip lt newVars
 
 unifier :: [(Term, Term)] -> Unifier
 unifier subs = M.fromList subs
