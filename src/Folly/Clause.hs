@@ -15,6 +15,11 @@ import Folly.Unification
 data Clause = Clause (Set Formula) Justification
            deriving (Show)
 
+data Justification
+  = Given
+  | Resolved Clause Clause Unifier Unifier
+    deriving (Eq, Ord, Show)
+
 instance Eq Clause where
   (==) (Clause cs1 _) (Clause cs2 _) = cs1 == cs2
 
@@ -25,11 +30,6 @@ givenClause cs = Clause cs Given
 resolvedClause cs lc rc mgu = Clause cs (Resolved lc rc mgu M.empty)
 
 empty = Clause S.empty Given
-
-data Justification
-  = Given
-  | Resolved Clause Clause Unifier Unifier
-    deriving (Eq, Ord, Show)
 
 applySub :: Unifier -> Clause -> Clause
 applySub u c@(Clause lits j) =
@@ -88,10 +88,15 @@ mkResolvedClause mgu lits lc rc =
 
 showTrace c = showTraceRec 0 c
 
-showTraceRec n c@(Clause cs Given) = (ind n) ++ "GIVEN " ++ show cs
+showTraceRec n c@(Clause cs Given) = (ind n) ++ "GIVEN " ++ showLits cs
 showTraceRec n c@(Clause cs (Resolved a b u _)) =
-  (ind n) ++ show cs ++ "\t" ++ show u ++ "\n" ++
+  (ind n) ++ showLits cs ++ "  " ++ show u ++ "\n" ++
   showTraceRec (n+1) a ++ "\n" ++
   showTraceRec (n+1) b
 
 ind n = L.concat $ L.replicate n "  "
+
+showLits ls = "{" ++ (L.concat $ L.intersperse " " $ L.map show lits) ++ "}"
+  where
+    lits = S.toList ls
+    n = L.length lits

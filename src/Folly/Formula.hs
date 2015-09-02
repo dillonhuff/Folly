@@ -5,6 +5,7 @@ module Folly.Formula(
   appendVarName, collectVars,
   var, func, constant,
   te, fa, pr, con, dis, neg, imp, bic, t, f,
+  (/\), (\/),
   vars, freeVars, isAtom, stripNegations,
   generalize, subFormula,
   applyToTerms,
@@ -86,7 +87,7 @@ showFormula :: Formula -> String
 showFormula T = "True"
 showFormula F = "False"
 showFormula (P predName args) = predName ++ "[" ++ (concat $ intersperse ", " $ L.map showTerm args)  ++ "]"
---showFormula (N (P name args)) = "~" ++ show (P name args)
+showFormula (N (P name args)) = "~" ++ show (P name args)
 showFormula (N f) = "~(" ++ show f ++ ")"
 showFormula (B op f1 f2) = "(" ++ show f1 ++ " " ++ op ++ " "  ++ show f2 ++ ")"
 showFormula (Q q t f) = "(" ++ q ++ " "  ++ show t ++ " . " ++ show f ++ ")"
@@ -120,6 +121,9 @@ bic f1 f2 = B "<->" f1 f2
 neg f = N f
 t = T
 f = F
+
+(/\) = con
+(\/) = dis
 
 vars :: Formula -> Set Term
 vars T = S.empty

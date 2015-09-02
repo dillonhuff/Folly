@@ -11,7 +11,10 @@ import Folly.Formula
 import Folly.Theorem
 
 isValid :: Theorem -> Bool
-isValid t = isValid' maxClause standardSkolem t
+isValid t =
+  case isValid' maxClause standardSkolem t of
+   Just _ -> True
+   Nothing -> False
 
 maxClause cs = S.findMax cs
 
@@ -23,20 +26,23 @@ standardSkolem t = deleteTautologies $ clauseSet
   
 isValid' :: (Set Clause -> Clause) -> -- Clause selection
             (Theorem -> Set Clause) -> -- Preprocessor
-            Theorem -> Bool
+            Theorem -> Maybe Clause
 isValid' s p t =
   case S.size clauses == 0 of
-   True -> False
-   False -> not $ resolve s (S.singleton (s clauses)) (S.delete (s clauses) clauses)
+   True -> Nothing
+   False ->
+     case S.member C.empty clauses of
+      True -> S.lookupGE C.empty clauses
+      False -> resolve s (S.singleton (s clauses)) (S.delete (s clauses) clauses)
   where
     clauses = p t
 
-resolve :: (Set Clause -> Clause) -> Set Clause -> Set Clause -> Bool
-resolve s axioms cls = case S.member C.empty axioms ||
-                            S.member C.empty cls of
-  True -> False
+resolve :: (Set Clause -> Clause) -> Set Clause -> Set Clause -> Maybe Clause
+resolve s axioms cls =
+  case S.member C.empty cls of
+  True -> lookupGE C.empty cls
   False -> case S.size cls == 0 of
-    True -> True
+    True -> Nothing
     False ->
       let c = s cls
           newClauses = genNewClauses c axioms in
