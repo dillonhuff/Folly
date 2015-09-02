@@ -24,31 +24,20 @@ isValid' :: (Set Clause -> Clause) -> -- Clause selection
 isValid' s p t =
   case S.size clauses == 0 of
    True -> False
-   False -> not $ resolve s $ clauses
+   False -> not $ resolve s (S.singleton (s clauses)) (S.delete (s clauses) clauses)
   where
     clauses = p t
 
-resolve :: (Set Clause -> Clause) -> Set Clause -> Bool
-resolve s cls = case S.member C.empty cls of
+resolve :: (Set Clause -> Clause) -> Set Clause -> Set Clause -> Bool
+resolve s axioms cls = case S.member C.empty axioms ||
+                            S.member C.empty cls of
   True -> False
-  False -> resolve s (genNewClauses s cls)
+  False -> case S.size cls == 0 of
+    True -> True
+    False ->
+      let c = s cls
+          newClauses = genNewClauses c axioms in
+       resolve s (S.insert c axioms) (S.delete c $ S.union newClauses cls)
 
-genNewClauses s cls =
-  let c = s cls
-      newClauses = S.fold S.union S.empty $ S.map (\x -> resolvedClauses c x) (S.delete c cls) in
-   S.union cls newClauses
-
-{-resolveIter :: (Set Clause -> Clause) -> Set Clause -> Bool
-resolveIter s clauseSet = case S.size clauseSet == 0 of
-  True -> True
-  False -> case S.member C.empty clauseSet of
-    True -> False
-    False -> resolveIter (newClauses:clauseSets)
-  where
-    newClauses = generateNewClauses (head clauseSets) (L.foldl S.union S.empty clauseSets)-}
-
-generateNewClauses :: Set Clause -> Set Clause -> Set Clause
-generateNewClauses recent old = deleteTautologies $ newClauses
-  where
-    newClauses = S.fold S.union S.empty $ S.map (\c -> genNewClauses c old) recent
-    genNewClauses c cs = S.fold S.union S.empty $ S.map (\x -> resolvedClauses c x) cs
+genNewClauses c cls =
+  S.fold S.union S.empty $ S.map (\x -> S.union (resolvedClauses c x) (resolvedClauses x c)) (S.delete c cls)
