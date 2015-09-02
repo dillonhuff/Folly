@@ -1,7 +1,7 @@
 module Folly.Formula(
   Term, Formula,
   fvt, subTerm, isVar, isConst, isFunc,
-  funcName, funcArgs,
+  funcName, funcArgs, varName,
   appendVarName, collectVars,
   var, func, constant,
   te, fa, pr, con, dis, neg, imp, bic, t, f,
@@ -50,6 +50,8 @@ func n args = case (L.take 3 n) == "skl" of
   True -> error $ "Function names beginning with skl are reserved for skolemization"
   False -> Func n args
 constant n = Constant n
+
+varName (Var n) = n
 
 appendVarName :: String -> Term -> Term
 appendVarName suffix (Var n) = Var (n ++ suffix)

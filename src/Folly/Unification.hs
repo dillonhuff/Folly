@@ -15,11 +15,17 @@ type Unifier = Map Term Term
 
 uniqueVarSub :: [Term] -> [Term] -> Unifier
 uniqueVarSub lt rt =
-  let newVars = L.map (\v -> appendVarName "z" v) lt in
-   case L.intersect newVars rt /= [] of
-    True -> error $ "uniquVarSub: bad args " ++ show lt ++ " " ++ show rt
-    False -> M.fromList $ L.zip lt newVars
+  let overlappingNames = L.intersect lt rt in
+   case overlappingNames of
+    [] -> M.empty
+    _ -> M.fromList $ L.zip overlappingNames (genUniqueVars (L.length overlappingNames) (lt ++ rt))
 
+genUniqueVars n exclude =
+  let excludedNames = L.reverse $ L.sort $ L.map varName exclude
+      prefixes = L.replicate n $ L.head excludedNames
+      newNames = L.zipWith (\p z -> p ++ show z) prefixes $ [1..n] in
+   L.map var newNames
+   
 unifier :: [(Term, Term)] -> Unifier
 unifier subs = M.fromList subs
 
