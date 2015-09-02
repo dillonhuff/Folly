@@ -8,7 +8,9 @@ import Folly.Formula
 import Folly.Theorem
 
 isValid :: Theorem -> Bool
-isValid t = isValid' standardSkolem t
+isValid t = isValid' maxClause standardSkolem t
+
+maxClause cs = S.findMax cs
 
 standardSkolem t = deleteTautologies $ clauseSet
   where
@@ -16,24 +18,34 @@ standardSkolem t = deleteTautologies $ clauseSet
     clauses = L.map (givenClause . S.fromList) $ toClausalForm $ L.foldr (\l r -> con l r) (head formulas) (tail formulas)
     clauseSet = S.fromList clauses
   
-isValid' :: (Theorem -> Set Clause) -> -- Preprocessor
+isValid' :: (Set Clause -> Clause) -> -- Clause selection
+            (Theorem -> Set Clause) -> -- Preprocessor
             Theorem -> Bool
-isValid' p t = not $ resolve $ p t
+isValid' s p t =
+  case S.size clauses == 0 of
+   True -> False
+   False -> not $ resolve s $ clauses
+  where
+    clauses = p t
 
-resolve :: Set Clause -> Bool
-resolve cls = case S.member C.empty cls of
+resolve :: (Set Clause -> Clause) -> Set Clause -> Bool
+resolve s cls = case S.member C.empty cls of
   True -> False
-  False -> resolveIter [cls]
+  False -> resolve s (genNewClauses s cls)
 
-resolveIter :: [Set Clause] -> Bool
-resolveIter [] = error "Empty list of clause sets"
-resolveIter clauseSets = case S.size newClauses == 0 of
+genNewClauses s cls =
+  let c = s cls
+      newClauses = S.fold S.union S.empty $ S.map (\x -> resolvedClauses c x) (S.delete c cls) in
+   S.union cls newClauses
+
+{-resolveIter :: (Set Clause -> Clause) -> Set Clause -> Bool
+resolveIter s clauseSet = case S.size clauseSet == 0 of
   True -> True
-  False -> case S.member C.empty newClauses of
+  False -> case S.member C.empty clauseSet of
     True -> False
     False -> resolveIter (newClauses:clauseSets)
   where
-    newClauses = generateNewClauses (head clauseSets) (L.foldl S.union S.empty clauseSets)
+    newClauses = generateNewClauses (head clauseSets) (L.foldl S.union S.empty clauseSets)-}
 
 generateNewClauses :: Set Clause -> Set Clause -> Set Clause
 generateNewClauses recent old = deleteTautologies $ newClauses
