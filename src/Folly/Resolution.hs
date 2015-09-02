@@ -1,4 +1,7 @@
-module Folly.Resolution(isValid) where
+module Folly.Resolution(isValid,
+                        isValid',
+                        standardSkolem,
+                        maxClause) where
 
 import Data.List as L
 import Data.Set as S

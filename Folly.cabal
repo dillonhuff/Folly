@@ -2,7 +2,7 @@
 --  see http://haskell.org/cabal/users-guide/
 
 name:                Folly
-version:             0.1.5.2
+version:             0.2.0.0
 synopsis:            A first order logic library in Haskell
 description:         An implementation of first order logic in Haskell that
 		     includes a library of modules for incorporating first
