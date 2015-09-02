@@ -8,11 +8,17 @@ import Folly.Formula
 import Folly.Theorem
 
 isValid :: Theorem -> Bool
-isValid t = not $ resolve $ deleteTautologies $ clauseSet
+isValid t = isValid' standardSkolem t
+
+standardSkolem t = deleteTautologies $ clauseSet
   where
     formulas = (neg (conclusion t)) : (hypothesis t)
     clauses = L.map (givenClause . S.fromList) $ uniqueVarNames $ toClausalForm $ L.foldr (\l r -> con l r) (head formulas) (tail formulas)
     clauseSet = S.fromList clauses
+  
+isValid' :: (Theorem -> Set Clause) -> -- Preprocessor
+            Theorem -> Bool
+isValid' p t = not $ resolve $ p t
 
 resolve :: Set Clause -> Bool
 resolve cls = case S.member C.empty cls of
