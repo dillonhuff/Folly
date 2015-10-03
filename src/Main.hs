@@ -17,8 +17,8 @@ main = do
   thmString <- hGetContents fHandle
   let thm = processTheoremFile thmString
   case thm of
-    Failed errMsg -> putStrLn errMsg
-    Succeeded t -> do
+    Left errMsg -> putStrLn errMsg
+    Right t -> do
       putStr $ show t
       case isValid t of
         True -> putStrLn "\n\nIs Valid"

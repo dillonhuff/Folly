@@ -4,6 +4,7 @@ module Folly.Resolution(isValid,
                         maxClause) where
 
 import Data.List as L
+import Data.Maybe
 import Data.Set as S
 
 import Folly.Clause as C
@@ -40,13 +41,15 @@ isValid' s p t =
 resolve :: (Set Clause -> Clause) -> Set Clause -> Set Clause -> Maybe Clause
 resolve s axioms cls =
   case S.member C.empty cls of
-  True -> lookupGE C.empty cls
-  False -> case S.size cls == 0 of
-    True -> Nothing
-    False ->
-      let c = s cls
-          newClauses = genNewClauses c axioms in
-       resolve s (S.insert c axioms) (S.delete c $ S.union newClauses cls)
+   True -> S.lookupGE C.empty cls
+   False -> case S.size cls == 0 of
+     True -> Nothing
+     False ->
+       let c = s cls
+           newClauses = genNewClauses c axioms
+           nextAxioms = S.insert c axioms
+           nextCls = S.delete c $ S.union newClauses cls in
+        resolve s nextAxioms nextCls
 
 genNewClauses c cls =
   S.fold S.union S.empty $ S.map (\x -> S.union (resolvedClauses c x) (resolvedClauses x c)) (S.delete c cls)

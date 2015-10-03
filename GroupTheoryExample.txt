@@ -11,4 +11,5 @@ V x. E y. Eq[times(x, y), One]
 Inverse[x, y] <-> Eq[times(x, y), One] & Eq[times(y, x), One]
 
 CONCLUSION:
+
 Inverse[x, y] & Inverse[x, z] -> Eq[y, z]

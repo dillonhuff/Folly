@@ -14,8 +14,8 @@ import Folly.Utils
 
 parseTheorem :: [Token] -> Error Theorem
 parseTheorem toks = case parse parseTheoremToks "PARSER" toks of
-  Left err -> Failed $ show err
-  Right thm -> Succeeded thm
+  Left err -> Left $ show err
+  Right thm -> Right thm
 
 parseTheoremToks = do
   axioms <- parseHypothesis
@@ -34,8 +34,8 @@ parseHypothesis = do
 
 parseFormula :: [Token] -> Error (Formula)
 parseFormula toks = case parse parseForm "PARSER" toks of
-  Left err -> Failed $ show err
-  Right formula -> Succeeded formula
+  Left err -> Left $ show err
+  Right formula -> Right formula
 
 parseForm = buildExpressionParser table parseFactor
 

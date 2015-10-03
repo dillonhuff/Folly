@@ -57,8 +57,8 @@ tokEqual t1 t2 = name t1 == name t2
 
 lexer :: String -> Error [Token]
 lexer str = case parse parseToks "LEXER" str of
-  Left err -> Failed $ show err
-  Right toks -> Succeeded $ toks
+  Left err -> Left $ show err
+  Right toks -> Right toks
 
 parseToks = endBy parseTok spaces
 
